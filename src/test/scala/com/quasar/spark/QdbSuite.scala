@@ -32,7 +32,7 @@ class QdbSuite extends FunSuite with BeforeAndAfterAll {
   test("creating RDD") {
     val results = sqlContext
       .sparkContext
-      .fromQdbUri("foo")
+      .fromQdbUri("qdb://127.0.0.1:2836")
       .collect()
 
     assert(results.size == 1)
