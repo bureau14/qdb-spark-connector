@@ -1,5 +1,7 @@
 package com.quasardb.spark
 
+import java.nio.ByteBuffer
+
 import org.apache.spark.sql.{SQLContext, Row, SaveMode}
 import org.apache.spark.{SparkContext, SparkException}
 
@@ -21,14 +23,16 @@ class QdbSuite extends FunSuite with BeforeAndAfterAll {
     super.beforeAll()
     sqlContext = new SQLContext(new SparkContext("local[2]", "QdbSuite"))
 
+    val value = ByteBuffer.allocateDirect(3).put(new String("125").getBytes())
+
     // Store a few default entries
     val entry1 = new QdbCluster(qdbUri).getInteger("key1")
     val entry2 = new QdbCluster(qdbUri).getInteger("key2")
-    val entry3 = new QdbCluster(qdbUri).getInteger("key3")
+    val entry3 = new QdbCluster(qdbUri).getBlob("key3")
 
     entry1.put(123)
     entry2.put(124)
-    entry3.put(125)
+    entry3.put(value)
 
     entry1.addTag("tag1")
     entry2.addTag("tag1")
@@ -68,6 +72,17 @@ class QdbSuite extends FunSuite with BeforeAndAfterAll {
 
     assert(results2.size == 1)
     assert(results2.last == "key3")
+  }
 
+  test("searching for integers by tag") {
+    val results = sqlContext
+      .sparkContext
+      .fromQdbTag(qdbUri, "tag1")
+      .getInteger()
+      .collect().sorted
+
+    assert(results.size == 2)
+    assert(results.head._2 == 123)
+    assert(results.last._2 == 124)
   }
 }
