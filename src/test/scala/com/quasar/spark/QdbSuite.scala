@@ -50,15 +50,24 @@ class QdbSuite extends FunSuite with BeforeAndAfterAll {
     }
   }
 
-  test("creating RDD") {
-    val results = sqlContext
+  test("searching for tags") {
+    val results1 = sqlContext
       .sparkContext
       .fromQdbTag(qdbUri, "tag1")
       .collect().sorted
 
-    assert(results.size == 2)
+    val results2 = sqlContext
+      .sparkContext
+      .fromQdbTag(qdbUri, "tag2")
+      .collect().sorted
 
-    assert(results.head == "key1")
-    assert(results.last == "key2")
+    assert(results1.size == 2)
+
+    assert(results1.head == "key1")
+    assert(results1.last == "key2")
+
+    assert(results2.size == 1)
+    assert(results2.last == "key3")
+
   }
 }
