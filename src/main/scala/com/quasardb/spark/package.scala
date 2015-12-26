@@ -6,8 +6,9 @@ import com.quasardb.spark.rdd._
 package object spark {
 
   implicit class QdbContext(sc: SparkContext) {
-    def fromQdbUri(uri: String) = {
-      new QdbKeyRDD(sc, uri)
+    def fromQdbTag(uri: String,
+                   tag: String) = {
+      new QdbTagRDD(sc, uri, tag)
     }
   }
 
