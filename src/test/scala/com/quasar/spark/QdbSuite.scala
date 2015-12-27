@@ -19,11 +19,15 @@ class QdbSuite extends FunSuite with BeforeAndAfterAll {
   private var qdbUri: String = "qdb://127.0.0.1:2836"
   private var sqlContext: SQLContext = _
 
+  private def cleanQdb = {
+    new QdbCluster(qdbUri).purgeAll()
+  }
+
   override protected def beforeAll(): Unit = {
     super.beforeAll()
     sqlContext = new SQLContext(new SparkContext("local[2]", "QdbSuite"))
 
-    val value = ByteBuffer.allocateDirect(3).put(new String("125").getBytes())
+    cleanQdb
 
     // Store a few default entries
     val entry1 = new QdbCluster(qdbUri).getInteger("key1")
@@ -32,7 +36,7 @@ class QdbSuite extends FunSuite with BeforeAndAfterAll {
 
     entry1.put(123)
     entry2.put(124)
-    entry3.put(value)
+    entry3.put(ByteBuffer.allocateDirect(3).put(new String("125").getBytes()))
 
     entry1.addTag("tag1")
     entry2.addTag("tag1")
@@ -45,9 +49,7 @@ class QdbSuite extends FunSuite with BeforeAndAfterAll {
         .sparkContext
         .stop()
 
-      new QdbCluster(qdbUri).removeEntry("key1")
-      new QdbCluster(qdbUri).removeEntry("key2")
-      new QdbCluster(qdbUri).removeEntry("key3")
+      cleanQdb
 
     } finally {
       super.afterAll()
@@ -85,4 +87,16 @@ class QdbSuite extends FunSuite with BeforeAndAfterAll {
     assert(results.head._2 == 123)
     assert(results.last._2 == 124)
   }
+
+  test("searching for string by tag") {
+    val results = sqlContext
+      .sparkContext
+      .fromQdbTag(qdbUri, "tag2")
+      .getString()
+      .collect().sorted
+
+    assert(results.size == 1)
+    assert(results.last._2 == "125")
+  }
+
 }
