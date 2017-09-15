@@ -20,7 +20,7 @@ class QdbSuite extends FunSuite with BeforeAndAfterAll {
   private var sqlContext: SQLContext = _
 
   private def cleanQdb = {
-    new QdbCluster(qdbUri).purgeAll()
+    new QdbCluster(qdbUri).purgeAll(3000)
   }
 
   override protected def beforeAll(): Unit = {
@@ -30,17 +30,17 @@ class QdbSuite extends FunSuite with BeforeAndAfterAll {
     cleanQdb
 
     // Store a few default entries
-    val entry1 = new QdbCluster(qdbUri).getInteger("key1")
-    val entry2 = new QdbCluster(qdbUri).getInteger("key2")
-    val entry3 = new QdbCluster(qdbUri).getBlob("key3")
+    val entry1 = new QdbCluster(qdbUri).integer("key1")
+    val entry2 = new QdbCluster(qdbUri).integer("key2")
+    val entry3 = new QdbCluster(qdbUri).blob("key3")
 
     entry1.put(123)
     entry2.put(124)
     entry3.put(ByteBuffer.allocateDirect(3).put(new String("125").getBytes()))
 
-    entry1.addTag("tag1")
-    entry2.addTag("tag1")
-    entry3.addTag("tag2")
+    entry1.attachTag("tag1")
+    entry2.attachTag("tag1")
+    entry3.attachTag("tag2")
   }
 
   override protected def afterAll(): Unit = {

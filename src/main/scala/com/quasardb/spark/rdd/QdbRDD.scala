@@ -3,6 +3,7 @@ package com.quasardb.spark.rdd
 import org.apache.spark.rdd.RDD
 import org.apache.spark._
 import java.nio.ByteBuffer
+import java.nio.charset.StandardCharsets.UTF_8
 
 import net.quasardb.qdb._
 
@@ -12,7 +13,7 @@ import scala.reflect.ClassTag
 import com.quasardb.spark.partitioner._
 
 class QdbStringRDD(prev: RDD[String])
-    extends RDD[(String, String)](prev) with Logging {
+    extends RDD[(String, String)](prev) {
 
   override protected def getPartitions: Array[Partition] = prev.partitions
 
@@ -27,17 +28,15 @@ class QdbStringRDD(prev: RDD[String])
     // TODO: limit query to only the Partition
 
     keys.map(key => {
-      val buffer = cluster.getBlob(key).get()
-      val bytes = Array.fill[Byte](buffer.limit())(0)
-      buffer.get(bytes)
+      val buffer = cluster.blob(key).get()
 
-      (key, new String(bytes))
+      (key, UTF_8.decode(buffer.toByteBuffer).toString())
     })
   }
 }
 
 class QdbIntegerRDD(prev: RDD[String])
-    extends RDD[(String, Long)](prev) with Logging {
+    extends RDD[(String, Long)](prev) {
 
   override protected def getPartitions = prev.partitions
 
@@ -52,7 +51,7 @@ class QdbIntegerRDD(prev: RDD[String])
     // TODO: limit query to only the Partition
 
     keys.map(key =>
-      (key, cluster.getInteger(key).get()))
+      (key, cluster.integer(key).get()))
   }
 }
 
@@ -70,7 +69,7 @@ class QdbTagRDD(
     val partition: QdbPartition = split.asInstanceOf[QdbPartition]
 
     // TODO: limit query to only the Partition
-    new QdbCluster(partition.uri).getTag(tag).getEntries().toList.iterator
+    new QdbCluster(partition.uri).tag(tag).entries().toList.map(x => x.alias).iterator
   }
 
   def getString(): RDD[(String, String)] = {
