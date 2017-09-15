@@ -7,7 +7,7 @@ spName := "quasardb/spark-connector"
 scalaVersion := "2.11.7"
 crossScalaVersions := Seq("2.10.5", "2.11.7")
 
-sparkVersion := "1.5.2"
+sparkVersion := "2.2.0"
 sparkComponents ++= Seq("streaming", "sql")
 
 organization := "net.quasardb"
