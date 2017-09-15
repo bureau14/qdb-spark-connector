@@ -14,7 +14,7 @@ import com.quasardb.spark.rdd._
 
 import scala.language.implicitConversions
 
-class QdbSuite extends FunSuite with BeforeAndAfterAll {
+class QdbTagsSuite extends FunSuite with BeforeAndAfterAll {
 
   private var qdbUri: String = "qdb://127.0.0.1:2836"
   private var sqlContext: SQLContext = _
@@ -25,7 +25,7 @@ class QdbSuite extends FunSuite with BeforeAndAfterAll {
 
   override protected def beforeAll(): Unit = {
     super.beforeAll()
-    sqlContext = new SQLContext(new SparkContext("local[2]", "QdbSuite"))
+    sqlContext = new SQLContext(new SparkContext("local[2]", "QdbTagsSuite"))
 
     cleanQdb
 
