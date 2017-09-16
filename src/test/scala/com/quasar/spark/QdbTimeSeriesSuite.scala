@@ -53,8 +53,9 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
     blobColumn = new QdbColumnDefinition.Blob(java.util.UUID.randomUUID.toString)
 
     val columns = List(doubleColumn, blobColumn)
-    val series : QdbTimeSeries = new QdbCluster(qdbUri)
-      .timeSeries(table)
+    val series : QdbTimeSeries =
+      new QdbCluster(qdbUri)
+        .timeSeries(table)
 
     series.create(columns.asJava)
 
@@ -92,10 +93,16 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
     }
   }
 
-  test("there is data in the timeseries") {
+  test("there is double data in the timeseries") {
     val results = sqlContext
       .sparkContext
       .fromQdbDoubleColumn(qdbUri, table, doubleColumn.getName, doubleRanges)
-      .collect().sorted
+      .collect()
+
+    for (result <- results) {
+      println("result = ", result)
+    }
+
+    assert(results.size == 100)
   }
 }

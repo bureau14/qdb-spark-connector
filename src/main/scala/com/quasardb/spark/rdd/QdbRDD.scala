@@ -87,18 +87,18 @@ class QdbTimeseriesDoubleRDD(
   val table: String,
   val column: String,
   val ranges: QdbTimeRangeCollection)
-    extends RDD[Double](sc, Seq.empty) {
+    extends RDD[QdbDoubleColumnValue](sc, Seq.empty) {
 
   override protected def getPartitions = QdbPartitioner.computePartitions(uri)
 
   override def compute(
     split: Partition,
-    context: TaskContext): Iterator[Double] = {
+    context: TaskContext): Iterator[QdbDoubleColumnValue] = {
     val partition: QdbPartition = split.asInstanceOf[QdbPartition]
 
     val series: QdbTimeSeries = new QdbCluster(partition.uri).timeSeries(table)
 
     // TODO: limit query to only the Partition
-    series.getDoubles(column, ranges).toList.map(x => x.getValue.doubleValue).iterator
+    series.getDoubles(column, ranges).toList.iterator
   }
 }
