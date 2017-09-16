@@ -78,6 +78,12 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
         new QdbTimespec(doubleRange.getEnd.getValue.plusNanos(1))))
 
 
+    val blobRange = blobCollection.range()
+    blobRanges.add(
+      new QdbTimeRange(
+        blobRange.getBegin,
+        new QdbTimespec(blobRange.getEnd.getValue.plusNanos(1))))
+
   }
 
   override protected def afterAll(): Unit = {
@@ -97,6 +103,19 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
     val results = sqlContext
       .sparkContext
       .fromQdbDoubleColumn(qdbUri, table, doubleColumn.getName, doubleRanges)
+      .collect()
+
+    for (result <- results) {
+      println("result = ", result)
+    }
+
+    assert(results.size == 100)
+  }
+
+  test("there is blob data in the timeseries") {
+    val results = sqlContext
+      .sparkContext
+      .fromQdbBlobColumn(qdbUri, table, blobColumn.getName, blobRanges)
       .collect()
 
     for (result <- results) {

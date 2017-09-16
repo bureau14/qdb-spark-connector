@@ -19,6 +19,12 @@ package object spark {
                             ranges: QdbTimeRangeCollection) = {
       new QdbTimeseriesDoubleRDD(sc, uri, table, column, ranges)
     }
-  }
 
+    def fromQdbBlobColumn(uri: String,
+                          table: String,
+                          column: String,
+                          ranges: QdbTimeRangeCollection) = {
+      new QdbTimeseriesBlobRDD(sc, uri, table, column, ranges)
+    }
+  }
 }
