@@ -81,22 +81,24 @@ class QdbTagRDD(
   }
 }
 
-class QdbTimeSeriesDoubleRDD(prev: RDD[String])
-    extends RDD[(String, Long)](prev) {
+class QdbTimeseriesDoubleRDD(
+  sc: SparkContext,
+  val uri: String,
+  val table: String,
+  val column: String,
+  val ranges: QdbTimeRangeCollection)
+    extends RDD[Double](sc, Seq.empty) {
 
-  override protected def getPartitions = prev.partitions
+  override protected def getPartitions = QdbPartitioner.computePartitions(uri)
 
   override def compute(
     split: Partition,
-    context: TaskContext): Iterator[(String, Long)] = {
+    context: TaskContext): Iterator[Double] = {
     val partition: QdbPartition = split.asInstanceOf[QdbPartition]
-    val keys = firstParent[String].iterator(split, context)
 
-    val cluster = new QdbCluster(partition.uri)
+    val series: QdbTimeSeries = new QdbCluster(partition.uri).timeSeries(table)
 
     // TODO: limit query to only the Partition
-
-    keys.map(key =>
-      (key, cluster.integer(key).get()))
+    series.getDoubles(column, ranges).toList.map(x => x.getValue.doubleValue).iterator
   }
 }

@@ -1,6 +1,7 @@
 package com.quasardb.spark
 
 import java.nio.ByteBuffer
+import java.nio.charset.StandardCharsets.UTF_8
 
 import org.apache.spark.sql.{SQLContext, Row, SaveMode}
 import org.apache.spark.{SparkContext, SparkException}
@@ -22,11 +23,23 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
   private var qdbUri: String = "qdb://127.0.0.1:2836"
   private var sqlContext: SQLContext = _
   private var table: String = _
+
   private var doubleColumn: QdbColumnDefinition = _
+  private var doubleRanges: QdbTimeRangeCollection = new QdbTimeRangeCollection()
+
   private var blobColumn: QdbColumnDefinition = _
+  private var blobRanges: QdbTimeRangeCollection = new QdbTimeRangeCollection
 
   private def cleanQdb = {
     new QdbCluster(qdbUri).purgeAll(3000)
+  }
+
+  private def randomData(): ByteBuffer = {
+    val str = java.util.UUID.randomUUID.toString
+    var buf = ByteBuffer.allocateDirect(str.length)
+    buf.put(str.getBytes("UTF-8"))
+    buf.flip
+    buf
   }
 
   override protected def beforeAll(): Unit = {
@@ -40,15 +53,30 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
     blobColumn = new QdbColumnDefinition.Blob(java.util.UUID.randomUUID.toString)
 
     val columns = List(doubleColumn, blobColumn)
-    new QdbCluster(qdbUri)
+    val series : QdbTimeSeries = new QdbCluster(qdbUri)
       .timeSeries(table)
-      .create(columns.asJava)
+
+    series.create(columns.asJava)
 
     val r = scala.util.Random
     // Seed it with random doubles and blobs
-    val doubles = 0 to 100 foreach { _ =>
-      new QdbDoubleColumnValue(r.nextDouble)
-    }
+
+    val doubleCollection = new QdbDoubleColumnCollection(doubleColumn.getName())
+    val blobCollection = new QdbBlobColumnCollection(blobColumn.getName())
+
+    doubleCollection.addAll(Seq.fill(100)(new QdbDoubleColumnValue(r.nextDouble)).toList.asJava)
+    blobCollection.addAll(Seq.fill(100)(new QdbBlobColumnValue(randomData())).toList.asJava)
+
+    series.insertDoubles(doubleCollection)
+    series.insertBlobs(blobCollection)
+
+    val doubleRange = doubleCollection.range()
+    doubleRanges.add(
+      new QdbTimeRange(
+        doubleRange.getBegin,
+        new QdbTimespec(doubleRange.getEnd.getValue.plusNanos(1))))
+
+
   }
 
   override protected def afterAll(): Unit = {
@@ -64,7 +92,10 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
     }
   }
 
-  test("world domination") {
-    assert(true == false)
+  test("there is data in the timeseries") {
+    val results = sqlContext
+      .sparkContext
+      .fromQdbDoubleColumn(qdbUri, table, doubleColumn.getName, doubleRanges)
+      .collect().sorted
   }
 }
