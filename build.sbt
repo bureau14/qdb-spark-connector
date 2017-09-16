@@ -20,3 +20,5 @@ libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.0.4" % "test",
   "com.novocode" % "junit-interface" % "0.9" % "test"
 )
+
+parallelExecution in Test := false
