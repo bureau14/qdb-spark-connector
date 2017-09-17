@@ -7,6 +7,7 @@ import org.apache.spark.sql.{SQLContext, Row, SaveMode}
 import org.apache.spark.{SparkContext, SparkException}
 
 import org.scalatest.{BeforeAndAfterAll, FunSuite}
+import org.scalatest.Matchers._
 
 import net.quasardb.qdb._;
 
@@ -25,9 +26,11 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
   private var table: String = _
 
   private var doubleColumn: QdbColumnDefinition = _
+  private var doubleCollection: QdbDoubleColumnCollection = _
   private var doubleRanges: QdbTimeRangeCollection = new QdbTimeRangeCollection()
 
   private var blobColumn: QdbColumnDefinition = _
+  private var blobCollection: QdbBlobColumnCollection = _
   private var blobRanges: QdbTimeRangeCollection = new QdbTimeRangeCollection
 
   private def cleanQdb = {
@@ -62,8 +65,8 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
     val r = scala.util.Random
     // Seed it with random doubles and blobs
 
-    val doubleCollection = new QdbDoubleColumnCollection(doubleColumn.getName())
-    val blobCollection = new QdbBlobColumnCollection(blobColumn.getName())
+    doubleCollection = new QdbDoubleColumnCollection(doubleColumn.getName())
+    blobCollection = new QdbBlobColumnCollection(blobColumn.getName())
 
     doubleCollection.addAll(Seq.fill(100)(new QdbDoubleColumnValue(r.nextDouble)).toList.asJava)
     blobCollection.addAll(Seq.fill(100)(new QdbBlobColumnValue(randomData())).toList.asJava)
@@ -99,29 +102,25 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
     }
   }
 
-  test("there is double data in the timeseries") {
+  test("all double data can be retrieved from the timeseries") {
     val results = sqlContext
       .sparkContext
       .fromQdbDoubleColumn(qdbUri, table, doubleColumn.getName, doubleRanges)
       .collect()
 
-    for (result <- results) {
-      println("result = ", result)
+    for (expected <- doubleCollection.asScala) {
+      results should contain(expected)
     }
-
-    assert(results.size == 100)
   }
 
-  test("there is blob data in the timeseries") {
+  test("all blob data can be retrieved from the timeseries") {
     val results = sqlContext
       .sparkContext
       .fromQdbBlobColumn(qdbUri, table, blobColumn.getName, blobRanges)
       .collect()
 
-    for (result <- results) {
-      println("result = ", result)
+    for (expected <- blobCollection.asScala) {
+      results should contain(expected)
     }
-
-    assert(results.size == 100)
   }
 }
