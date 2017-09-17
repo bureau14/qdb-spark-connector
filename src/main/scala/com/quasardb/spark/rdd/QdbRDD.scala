@@ -1,9 +1,13 @@
 package com.quasardb.spark.rdd
 
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.{SQLContext, Row, DataFrame}
+import org.apache.spark.sql.types._
 import org.apache.spark._
+
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets.UTF_8
+import java.sql.Timestamp
 
 import net.quasardb.qdb._
 
@@ -59,7 +63,7 @@ class QdbTagRDD(
   sc: SparkContext,
   val uri: String,
   val tag: String)
-    extends RDD[String](sc, Seq.empty) {
+    extends RDD[String](sc, Nil) {
 
   override protected def getPartitions = QdbPartitioner.computePartitions(uri)
 
@@ -81,13 +85,13 @@ class QdbTagRDD(
   }
 }
 
-class QdbTimeseriesDoubleRDD(
+class QdbTimeSeriesDoubleRDD(
   sc: SparkContext,
   val uri: String,
   val table: String,
   val column: String,
   val ranges: QdbTimeRangeCollection)
-    extends RDD[QdbDoubleColumnValue](sc, Seq.empty) {
+    extends RDD[QdbDoubleColumnValue](sc, Nil) {
 
   override protected def getPartitions = QdbPartitioner.computePartitions(uri)
 
@@ -101,15 +105,31 @@ class QdbTimeseriesDoubleRDD(
     // TODO: limit query to only the Partition
     series.getDoubles(column, ranges).toList.iterator
   }
+
+  def toDataFrame(sqlContext: SQLContext): DataFrame = {
+    val struct =
+      StructType(
+        StructField("timestamp", TimestampType, false) ::
+        StructField("value", DoubleType, false) :: Nil)
+
+
+    sqlContext.createDataFrame(map(QdbTimeSeriesDoubleRDD.toRow), struct(Set("timestamp", "value")))
+  }
 }
 
-class QdbTimeseriesBlobRDD(
+object QdbTimeSeriesDoubleRDD {
+  def toRow(row:QdbDoubleColumnValue): Row = {
+    Row(Timestamp.valueOf(row.getTimestamp.getValue), row.getValue)
+  }
+}
+
+class QdbTimeSeriesBlobRDD(
   sc: SparkContext,
   val uri: String,
   val table: String,
   val column: String,
   val ranges: QdbTimeRangeCollection)
-    extends RDD[QdbBlobColumnValue](sc, Seq.empty) {
+    extends RDD[QdbBlobColumnValue](sc, Nil) {
 
   override protected def getPartitions = QdbPartitioner.computePartitions(uri)
 
@@ -122,5 +142,24 @@ class QdbTimeseriesBlobRDD(
 
     // TODO: limit query to only the Partition
     series.getBlobs(column, ranges).toList.iterator
+  }
+
+  def toDataFrame(sqlContext: SQLContext): DataFrame = {
+    val struct =
+      StructType(
+        StructField("timestamp", TimestampType, false) ::
+        StructField("value", BinaryType, false) :: Nil)
+
+    sqlContext.createDataFrame(map(QdbTimeSeriesBlobRDD.toRow), struct(Set("timestamp", "value")))
+  }
+}
+
+object QdbTimeSeriesBlobRDD {
+  def toRow(row:QdbBlobColumnValue): Row = {
+    val buf : ByteBuffer = row.getValue
+    var arr : Array[Byte] = new Array[Byte](buf.remaining)
+    buf.get(arr)
+
+    Row(Timestamp.valueOf(row.getTimestamp.getValue), arr)
   }
 }

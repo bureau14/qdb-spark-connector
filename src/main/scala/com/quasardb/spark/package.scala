@@ -1,30 +1,32 @@
 package com.quasardb
 
-import org.apache.spark.SparkContext
+import org.apache.spark.sql.{DataFrame, SQLContext}
 import com.quasardb.spark.rdd._
 
 import net.quasardb.qdb.QdbTimeRangeCollection
 
 package object spark {
 
-  implicit class QdbContext(sc: SparkContext) {
-    def fromQdbTag(uri: String,
-                   tag: String) = {
-      new QdbTagRDD(sc, uri, tag)
+  implicit class QdbContext(@transient val sqlContext : SQLContext) {
+    def tagAsDataFrame(uri: String,
+                       tag: String) = {
+      new QdbTagRDD(sqlContext.sparkContext, uri, tag)
     }
 
-    def fromQdbDoubleColumn(uri: String,
-                            table: String,
-                            column: String,
-                            ranges: QdbTimeRangeCollection) = {
-      new QdbTimeseriesDoubleRDD(sc, uri, table, column, ranges)
+    def qdbDoubleColumnAsDataFrame(uri: String,
+                                   table: String,
+                                   column: String,
+                                   ranges: QdbTimeRangeCollection) = {
+      new QdbTimeSeriesDoubleRDD(sqlContext.sparkContext, uri, table, column, ranges)
+        .toDataFrame(sqlContext)
     }
 
-    def fromQdbBlobColumn(uri: String,
-                          table: String,
-                          column: String,
-                          ranges: QdbTimeRangeCollection) = {
-      new QdbTimeseriesBlobRDD(sc, uri, table, column, ranges)
+    def qdbBlobColumnAsDataframe(uri: String,
+                                 table: String,
+                                 column: String,
+                                 ranges: QdbTimeRangeCollection) = {
+      new QdbTimeSeriesBlobRDD(sqlContext.sparkContext, uri, table, column, ranges)
+        .toDataFrame(sqlContext)
     }
   }
 }

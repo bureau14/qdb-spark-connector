@@ -58,13 +58,11 @@ class QdbTagsSuite extends FunSuite with BeforeAndAfterAll {
 
   test("searching for tags") {
     val results1 = sqlContext
-      .sparkContext
-      .fromQdbTag(qdbUri, "tag1")
+      .tagAsDataFrame(qdbUri, "tag1")
       .collect().sorted
 
     val results2 = sqlContext
-      .sparkContext
-      .fromQdbTag(qdbUri, "tag2")
+      .tagAsDataFrame(qdbUri, "tag2")
       .collect().sorted
 
     assert(results1.size == 2)
@@ -78,8 +76,7 @@ class QdbTagsSuite extends FunSuite with BeforeAndAfterAll {
 
   test("searching for integers by tag") {
     val results = sqlContext
-      .sparkContext
-      .fromQdbTag(qdbUri, "tag1")
+      .tagAsDataFrame(qdbUri, "tag1")
       .getInteger()
       .collect().sorted
 
@@ -90,8 +87,7 @@ class QdbTagsSuite extends FunSuite with BeforeAndAfterAll {
 
   test("searching for string by tag") {
     val results = sqlContext
-      .sparkContext
-      .fromQdbTag(qdbUri, "tag2")
+      .tagAsDataFrame(qdbUri, "tag2")
       .getString()
       .collect().sorted
 

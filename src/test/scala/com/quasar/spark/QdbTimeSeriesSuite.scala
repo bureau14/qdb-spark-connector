@@ -104,23 +104,22 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
 
   test("all double data can be retrieved from the timeseries") {
     val results = sqlContext
-      .sparkContext
-      .fromQdbDoubleColumn(qdbUri, table, doubleColumn.getName, doubleRanges)
+      .qdbDoubleColumnAsDataFrame(qdbUri, table, doubleColumn.getName, doubleRanges)
       .collect()
 
     for (expected <- doubleCollection.asScala) {
-      results should contain(expected)
+      results should contain(QdbTimeSeriesDoubleRDD.toRow(expected))
     }
   }
 
   test("all blob data can be retrieved from the timeseries") {
-    val results = sqlContext
-      .sparkContext
-      .fromQdbBlobColumn(qdbUri, table, blobColumn.getName, blobRanges)
-      .collect()
+    val df = sqlContext
+      .qdbBlobColumnAsDataframe(qdbUri, table, blobColumn.getName, blobRanges)
+
+    val results = df.collect()
 
     for (expected <- blobCollection.asScala) {
-      results should contain(expected)
+      results should contain(QdbTimeSeriesBlobRDD.toRow(expected))
     }
   }
 }
