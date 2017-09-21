@@ -13,19 +13,33 @@ package object spark {
       new QdbTagRDD(sqlContext.sparkContext, uri, tag)
     }
 
+    def qdbDoubleColumn(uri: String,
+                        table: String,
+                        column: String,
+                        ranges: QdbTimeRangeCollection) = {
+      new QdbTimeSeriesDoubleRDD(sqlContext.sparkContext, uri, table, column, ranges)
+    }
+
     def qdbDoubleColumnAsDataFrame(uri: String,
                                    table: String,
                                    column: String,
                                    ranges: QdbTimeRangeCollection) = {
-      new QdbTimeSeriesDoubleRDD(sqlContext.sparkContext, uri, table, column, ranges)
+      qdbDoubleColumn(uri, table, column, ranges)
         .toDataFrame(sqlContext)
+    }
+
+    def qdbBlobColumn(uri: String,
+                      table: String,
+                      column: String,
+                      ranges: QdbTimeRangeCollection) = {
+      new QdbTimeSeriesBlobRDD(sqlContext.sparkContext, uri, table, column, ranges)
     }
 
     def qdbBlobColumnAsDataframe(uri: String,
                                  table: String,
                                  column: String,
                                  ranges: QdbTimeRangeCollection) = {
-      new QdbTimeSeriesBlobRDD(sqlContext.sparkContext, uri, table, column, ranges)
+      qdbBlobColumn(uri, table, column, ranges)
         .toDataFrame(sqlContext)
     }
   }

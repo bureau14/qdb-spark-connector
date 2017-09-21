@@ -121,6 +121,10 @@ object QdbTimeSeriesDoubleRDD {
   def toRow(row:QdbDoubleColumnValue): Row = {
     Row(Timestamp.valueOf(row.getTimestamp.getValue), row.getValue)
   }
+
+  def fromRow(row:Row):QdbDoubleColumnValue = {
+    return null;
+  }
 }
 
 class QdbTimeSeriesBlobRDD(
