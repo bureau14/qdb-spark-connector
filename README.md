@@ -1,5 +1,5 @@
-# qdb-spark-rdd
-Official quasardb Spark Resilient Distributed Dataset (RDD)
+# qdb-spark-connector
+Official quasardb Spark connector.
 
 # Tests
 
