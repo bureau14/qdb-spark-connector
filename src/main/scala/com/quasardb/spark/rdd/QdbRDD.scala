@@ -85,48 +85,6 @@ class QdbTagRDD(
   }
 }
 
-class QdbTimeSeriesDoubleRDD(
-  sc: SparkContext,
-  val uri: String,
-  val table: String,
-  val column: String,
-  val ranges: QdbTimeRangeCollection)
-    extends RDD[QdbDoubleColumnValue](sc, Nil) {
-
-  override protected def getPartitions = QdbPartitioner.computePartitions(uri)
-
-  override def compute(
-    split: Partition,
-    context: TaskContext): Iterator[QdbDoubleColumnValue] = {
-    val partition: QdbPartition = split.asInstanceOf[QdbPartition]
-
-    val series: QdbTimeSeries = new QdbCluster(partition.uri).timeSeries(table)
-
-    // TODO: limit query to only the Partition
-    series.getDoubles(column, ranges).toList.iterator
-  }
-
-  def toDataFrame(sqlContext: SQLContext): DataFrame = {
-    val struct =
-      StructType(
-        StructField("timestamp", TimestampType, false) ::
-        StructField("value", DoubleType, false) :: Nil)
-
-
-    sqlContext.createDataFrame(map(QdbTimeSeriesDoubleRDD.toRow), struct(Set("timestamp", "value")))
-  }
-}
-
-object QdbTimeSeriesDoubleRDD {
-  def toRow(row:QdbDoubleColumnValue): Row = {
-    Row(Timestamp.valueOf(row.getTimestamp.getValue), row.getValue)
-  }
-
-  def fromRow(row:Row):QdbDoubleColumnValue = {
-    return null;
-  }
-}
-
 class QdbTimeSeriesBlobRDD(
   sc: SparkContext,
   val uri: String,

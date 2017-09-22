@@ -2,6 +2,8 @@ package com.quasardb.spark
 
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets.UTF_8
+import java.sql.Timestamp
+import java.time.{Instant, LocalDateTime}
 
 import org.apache.spark.sql.{SQLContext, Row, SaveMode}
 import org.apache.spark.{SparkContext, SparkException}
@@ -13,6 +15,7 @@ import net.quasardb.qdb._;
 
 import com.quasardb.spark._
 import com.quasardb.spark.rdd._
+import com.quasardb.spark.rdd.ts.{DoubleRDD, DoubleRDDFunctions}
 
 import scala.language.implicitConversions
 import scala.collection.JavaConverters._
@@ -102,17 +105,107 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
     }
   }
 
-  test("all double data can be retrieved from the timeseries") {
+
+  /**
+    * Double tests
+    */
+
+  test("all double data can be retrieved as an RDD") {
+    val results = sqlContext
+      .qdbDoubleColumn(qdbUri, table, doubleColumn.getName, doubleRanges)
+      .collect()
+
+    for (expected <- doubleCollection.asScala) {
+      results should contain(DoubleRDD.fromJava(expected))
+    }
+  }
+
+  test("all double data can be retrieved as a dataframe") {
     val results = sqlContext
       .qdbDoubleColumnAsDataFrame(qdbUri, table, doubleColumn.getName, doubleRanges)
       .collect()
 
     for (expected <- doubleCollection.asScala) {
-      results should contain(QdbTimeSeriesDoubleRDD.toRow(expected))
+      results should contain(DoubleRDD.toRow(DoubleRDD.fromJava(expected)))
     }
   }
 
-  test("all blob data can be retrieved from the timeseries") {
+  test("double data can be written as an RDD") {
+    // Define a new table with only the double column as definition
+    val newTable = java.util.UUID.randomUUID.toString
+    val series : QdbTimeSeries =
+      new QdbCluster(qdbUri)
+        .timeSeries(newTable)
+    val columns = List(doubleColumn)
+
+    series.create(columns.asJava)
+
+    val dataSet = doubleCollection.asScala.map(DoubleRDD.fromJava).toList
+
+    sqlContext
+      .sparkContext
+      .parallelize(dataSet)
+      .toQdbDoubleColumn(qdbUri, newTable, doubleColumn.getName)
+
+    // Retrieve our test data
+    val results = sqlContext
+      .qdbDoubleColumn(qdbUri, newTable, doubleColumn.getName, doubleRanges)
+      .collect()
+
+
+    for (expected <- doubleCollection.asScala) {
+      results should contain(DoubleRDD.fromJava(expected))
+    }
+  }
+
+  // test("double data can be written as a dataframe") {
+
+  //   // Define a new table with only the double column as definition
+  //   val newTable = java.util.UUID.randomUUID.toString
+  //   val series : QdbTimeSeries =
+  //     new QdbCluster(qdbUri)
+  //       .timeSeries(newTable)
+  //   val columns = List(doubleColumn)
+
+  //   series.create(columns.asJava)
+
+  //   // Write our test data based on our input test data
+  //   val input = sqlContext
+  //     .qdbDoubleColumnAsDataFrame(qdbUri, table, doubleColumn.getName, doubleRanges)
+  //     .collect()
+  //   println("saved to qdb")
+
+  //   // sqlContext
+  //   //   .sparkContext
+  //   //   .parallelize(dataSet)
+  //   //   .saveToQdbDoubleColumn(table, column)
+
+
+  //   // Retrieve our test data
+
+  //   val results = sqlContext
+  //     .qdbDoubleColumnAsDataFrame(qdbUri, newTable, doubleColumn.getName, doubleRanges)
+  //     .collect()
+
+  //   for (expected <- doubleCollection.asScala) {
+  //     results should contain(DoubleRDD.toRow(expected))
+  //   }
+  // }
+
+  /**
+    * Blob tests
+    */
+
+  test("all blob data can be retrieved as an RDD") {
+    val results = sqlContext
+      .qdbBlobColumn(qdbUri, table, blobColumn.getName, blobRanges).collect()
+
+    for (expected <- blobCollection.asScala) {
+      results should contain(expected)
+    }
+  }
+
+  test("all blob data can be retrieved as a dataframe") {
     val df = sqlContext
       .qdbBlobColumnAsDataframe(qdbUri, table, blobColumn.getName, blobRanges)
 

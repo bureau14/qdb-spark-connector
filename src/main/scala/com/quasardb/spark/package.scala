@@ -1,7 +1,12 @@
 package com.quasardb
 
+import java.sql.Timestamp
+
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, SQLContext}
+
 import com.quasardb.spark.rdd._
+import com.quasardb.spark.rdd.ts.{DoubleRDD, DoubleRDDFunctions}
 
 import net.quasardb.qdb.QdbTimeRangeCollection
 
@@ -17,7 +22,7 @@ package object spark {
                         table: String,
                         column: String,
                         ranges: QdbTimeRangeCollection) = {
-      new QdbTimeSeriesDoubleRDD(sqlContext.sparkContext, uri, table, column, ranges)
+      new DoubleRDD(sqlContext.sparkContext, uri, table, column, ranges)
     }
 
     def qdbDoubleColumnAsDataFrame(uri: String,
@@ -42,5 +47,9 @@ package object spark {
       qdbBlobColumn(uri, table, column, ranges)
         .toDataFrame(sqlContext)
     }
+  }
+
+  implicit def toQdbDoubleRDDFunctions[A <: (Timestamp, Double)](rdd: RDD[A]): DoubleRDDFunctions[A] = {
+    return new DoubleRDDFunctions[A](rdd)
   }
 }
