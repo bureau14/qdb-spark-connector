@@ -2,8 +2,8 @@ package com.quasardb.spark
 
 import java.nio.ByteBuffer
 
-import org.apache.spark.sql.{SQLContext, Row, SaveMode}
-import org.apache.spark.{SparkContext, SparkException}
+import org.apache.spark.sql.SQLContext
+import org.apache.spark.{SparkContext}
 
 import org.scalatest.{BeforeAndAfterAll, FunSuite}
 
@@ -92,5 +92,4 @@ class QdbTagsSuite extends FunSuite with BeforeAndAfterAll {
     assert(results.size == 1)
     assert(results.last._2 == "125")
   }
-
 }

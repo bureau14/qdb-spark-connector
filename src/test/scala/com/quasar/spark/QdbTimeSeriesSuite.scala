@@ -15,7 +15,7 @@ import net.quasardb.qdb._;
 
 import com.quasardb.spark._
 import com.quasardb.spark.rdd._
-import com.quasardb.spark.rdd.ts.{DoubleRDD, DoubleRDDFunctions}
+import com.quasardb.spark.rdd.ts.{DoubleRDD, DoubleRDDFunctions, BlobRDD}
 
 import scala.language.implicitConversions
 import scala.collection.JavaConverters._
@@ -205,7 +205,7 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
     val results = df.collect()
 
     for (expected <- blobCollection.asScala) {
-      results should contain(QdbTimeSeriesBlobRDD.toRow(expected))
+      results should contain(BlobRDD.toRow(expected))
     }
   }
 }

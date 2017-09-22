@@ -1,63 +1,54 @@
 package com.quasardb.spark.rdd.ts
 
+import java.nio.ByteBuffer
+import java.sql.Timestamp
+import scala.collection.JavaConversions._
+
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{SQLContext, Row, DataFrame}
 import org.apache.spark.sql.types._
 import org.apache.spark._
 
-import java.nio.ByteBuffer
-import java.nio.charset.StandardCharsets.UTF_8
-import java.sql.Timestamp
-
 import net.quasardb.qdb._
-
-import scala.collection.JavaConversions._
-import scala.reflect.ClassTag
-
 import com.quasardb.spark.partitioner._
 
-class DoubleRDD(
+class BlobRDD(
   sc: SparkContext,
   val uri: String,
   val table: String,
   val column: String,
   val ranges: QdbTimeRangeCollection)
-    extends RDD[(Timestamp, Double)](sc, Nil) {
+    extends RDD[QdbBlobColumnValue](sc, Nil) {
 
   override protected def getPartitions = QdbPartitioner.computePartitions(uri)
 
   override def compute(
     split: Partition,
-    context: TaskContext): Iterator[(Timestamp, Double)] = {
+    context: TaskContext): Iterator[QdbBlobColumnValue] = {
     val partition: QdbPartition = split.asInstanceOf[QdbPartition]
 
     val series: QdbTimeSeries = new QdbCluster(partition.uri).timeSeries(table)
 
     // TODO: limit query to only the Partition
-    series.getDoubles(column, ranges).toList.map(DoubleRDD.fromJava).iterator
+    series.getBlobs(column, ranges).toList.iterator
   }
 
   def toDataFrame(sqlContext: SQLContext): DataFrame = {
     val struct =
       StructType(
         StructField("timestamp", TimestampType, false) ::
-        StructField("value", DoubleType, false) :: Nil)
+        StructField("value", BinaryType, false) :: Nil)
 
-
-    sqlContext.createDataFrame(map(DoubleRDD.toRow), struct(Set("timestamp", "value")))
+    sqlContext.createDataFrame(map(BlobRDD.toRow), struct(Set("timestamp", "value")))
   }
 }
 
-object DoubleRDD {
-  def fromJava(row:QdbDoubleColumnValue):(Timestamp, Double) = {
-    (Timestamp.valueOf(row.getTimestamp.getValue), row.getValue)
-  }
+object BlobRDD {
+  def toRow(row:QdbBlobColumnValue): Row = {
+    val buf : ByteBuffer = row.getValue
+    var arr : Array[Byte] = new Array[Byte](buf.remaining)
+    buf.get(arr)
 
-  def toJava(row:(Timestamp, Double)):QdbDoubleColumnValue = {
-    new QdbDoubleColumnValue(row._1, row._2)
-  }
-
-  def toRow(row:(Timestamp, Double)): Row = {
-    Row(row._1, row._2)
+    Row(Timestamp.valueOf(row.getTimestamp.getValue), arr)
   }
 }

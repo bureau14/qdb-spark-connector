@@ -6,7 +6,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, SQLContext}
 
 import com.quasardb.spark.rdd._
-import com.quasardb.spark.rdd.ts.{DoubleRDD, DoubleRDDFunctions}
+import com.quasardb.spark.rdd.ts.{DoubleRDD, DoubleRDDFunctions, BlobRDD}
 
 import net.quasardb.qdb.QdbTimeRangeCollection
 
@@ -37,7 +37,7 @@ package object spark {
                       table: String,
                       column: String,
                       ranges: QdbTimeRangeCollection) = {
-      new QdbTimeSeriesBlobRDD(sqlContext.sparkContext, uri, table, column, ranges)
+      new BlobRDD(sqlContext.sparkContext, uri, table, column, ranges)
     }
 
     def qdbBlobColumnAsDataframe(uri: String,
