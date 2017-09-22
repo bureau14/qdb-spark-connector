@@ -36,10 +36,6 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
   private var blobCollection: QdbBlobColumnCollection = _
   private var blobRanges: QdbTimeRangeCollection = new QdbTimeRangeCollection
 
-  private def cleanQdb = {
-    new QdbCluster(qdbUri).purgeAll(3000)
-  }
-
   private def randomData(): ByteBuffer = {
     val str = java.util.UUID.randomUUID.toString
     var buf = ByteBuffer.allocateDirect(str.length)
@@ -51,7 +47,6 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
   override protected def beforeAll(): Unit = {
     super.beforeAll()
     sqlContext = new SQLContext(new SparkContext("local[2]", "QdbTimeSeriesSuite"))
-    cleanQdb
 
     // Create a timeseries table with random id
     table = java.util.UUID.randomUUID.toString

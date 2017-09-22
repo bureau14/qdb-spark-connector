@@ -18,29 +18,29 @@ class QdbTagsSuite extends FunSuite with BeforeAndAfterAll {
 
   private var qdbUri: String = "qdb://127.0.0.1:2836"
   private var sqlContext: SQLContext = _
+  private val key1: String = java.util.UUID.randomUUID.toString
+  private val key2: String = java.util.UUID.randomUUID.toString
+  private val key3: String = java.util.UUID.randomUUID.toString
 
-  private def cleanQdb = {
-    new QdbCluster(qdbUri).purgeAll(3000)
-  }
+  private val tag1: String = java.util.UUID.randomUUID.toString
+  private val tag2: String = java.util.UUID.randomUUID.toString
 
   override protected def beforeAll(): Unit = {
     super.beforeAll()
     sqlContext = new SQLContext(new SparkContext("local[2]", "QdbTagsSuite"))
 
-    cleanQdb
-
     // Store a few default entries
-    val entry1 = new QdbCluster(qdbUri).integer("key1")
-    val entry2 = new QdbCluster(qdbUri).integer("key2")
-    val entry3 = new QdbCluster(qdbUri).blob("key3")
+    val entry1 = new QdbCluster(qdbUri).integer(key1)
+    val entry2 = new QdbCluster(qdbUri).integer(key2)
+    val entry3 = new QdbCluster(qdbUri).blob(key3)
 
     entry1.put(123)
     entry2.put(124)
     entry3.put(ByteBuffer.allocateDirect(3).put(new String("125").getBytes()))
 
-    entry1.attachTag("tag1")
-    entry2.attachTag("tag1")
-    entry3.attachTag("tag2")
+    entry1.attachTag(tag1)
+    entry2.attachTag(tag1)
+    entry3.attachTag(tag2)
   }
 
   override protected def afterAll(): Unit = {
@@ -49,8 +49,6 @@ class QdbTagsSuite extends FunSuite with BeforeAndAfterAll {
         .sparkContext
         .stop()
 
-      cleanQdb
-
     } finally {
       super.afterAll()
     }
@@ -58,25 +56,25 @@ class QdbTagsSuite extends FunSuite with BeforeAndAfterAll {
 
   test("searching for tags") {
     val results1 = sqlContext
-      .tagAsDataFrame(qdbUri, "tag1")
+      .tagAsDataFrame(qdbUri, tag1)
       .collect().sorted
 
     val results2 = sqlContext
-      .tagAsDataFrame(qdbUri, "tag2")
+      .tagAsDataFrame(qdbUri, tag2)
       .collect().sorted
 
     assert(results1.size == 2)
 
-    assert(results1.head == "key1")
-    assert(results1.last == "key2")
+    assert(results1.head == key1)
+    assert(results1.last == key2)
 
     assert(results2.size == 1)
-    assert(results2.last == "key3")
+    assert(results2.last == key3)
   }
 
   test("searching for integers by tag") {
     val results = sqlContext
-      .tagAsDataFrame(qdbUri, "tag1")
+      .tagAsDataFrame(qdbUri, tag1)
       .getInteger()
       .collect().sorted
 
@@ -87,7 +85,7 @@ class QdbTagsSuite extends FunSuite with BeforeAndAfterAll {
 
   test("searching for string by tag") {
     val results = sqlContext
-      .tagAsDataFrame(qdbUri, "tag2")
+      .tagAsDataFrame(qdbUri, tag2)
       .getString()
       .collect().sorted
 
