@@ -65,8 +65,8 @@ class QdbTagsSuite extends FunSuite with BeforeAndAfterAll {
 
     assert(results1.size == 2)
 
-    assert(results1.head == key1)
-    assert(results1.last == key2)
+    assert(results1.head == key1 || results1.head == key2)
+    assert(results1.last == key1 || results1.last == key2)
 
     assert(results2.size == 1)
     assert(results2.last == key3)
@@ -79,8 +79,8 @@ class QdbTagsSuite extends FunSuite with BeforeAndAfterAll {
       .collect().sorted
 
     assert(results.size == 2)
-    assert(results.head._2 == 123)
-    assert(results.last._2 == 124)
+    assert(results.head._2 == 123 || results.head._2 == 124)
+    assert(results.last._2 == 123 || results.last._2 == 124)
   }
 
   test("searching for string by tag") {
