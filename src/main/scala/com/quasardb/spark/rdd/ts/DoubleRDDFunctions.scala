@@ -4,6 +4,8 @@ import java.sql.Timestamp
 import scala.collection.JavaConversions._
 import org.apache.spark.rdd.RDD
 
+import com.quasardb.spark.Configuration
+import com.quasardb.spark.rdd.Util
 import com.quasardb.spark.rdd.ts.DoubleRDD
 import net.quasardb.qdb._
 
@@ -12,7 +14,8 @@ class DoubleRDDFunctions[A <: (Timestamp, Double)](data: RDD[A]) extends Seriali
   def toQdbDoubleColumn(
     uri: String,
     table: String,
-    column: String) : Unit = {
+    column: String,
+    configuration: Configuration = new Configuration) : Unit = {
 
     data.foreachPartition { partition =>
       var collection = new QdbDoubleColumnCollection(column)
