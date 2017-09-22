@@ -98,8 +98,6 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
         .sparkContext
         .stop()
 
-      cleanQdb
-
     } finally {
       super.afterAll()
     }
