@@ -14,8 +14,6 @@ class DoubleRDDFunctions[A <: (Timestamp, Double)](data: RDD[A]) extends Seriali
     table: String,
     column: String) : Unit = {
 
-    println("storing partitions size = ", data.partitions.size)
-
     data.foreachPartition { partition =>
       var collection = new QdbDoubleColumnCollection(column)
       collection.addAll(partition.map(DoubleRDD.toJava).toList)
