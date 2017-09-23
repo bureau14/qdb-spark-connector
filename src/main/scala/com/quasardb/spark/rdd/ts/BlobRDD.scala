@@ -18,19 +18,19 @@ class BlobRDD(
   val table: String,
   val column: String,
   val ranges: QdbTimeRangeCollection)
-    extends RDD[QdbBlobColumnValue](sc, Nil) {
+    extends RDD[(Timestamp, Array[Byte])](sc, Nil) {
 
   override protected def getPartitions = QdbPartitioner.computePartitions(uri)
 
   override def compute(
     split: Partition,
-    context: TaskContext): Iterator[QdbBlobColumnValue] = {
+    context: TaskContext): Iterator[(Timestamp, Array[Byte])] = {
     val partition: QdbPartition = split.asInstanceOf[QdbPartition]
 
     val series: QdbTimeSeries = new QdbCluster(partition.uri).timeSeries(table)
 
     // TODO: limit query to only the Partition
-    series.getBlobs(column, ranges).toList.iterator
+    series.getBlobs(column, ranges).toList.map(BlobRDD.fromJava).iterator
   }
 
   def toDataFrame(sqlContext: SQLContext): DataFrame = {
@@ -44,11 +44,24 @@ class BlobRDD(
 }
 
 object BlobRDD {
-  def toRow(row:QdbBlobColumnValue): Row = {
+  def fromJava(row:QdbBlobColumnValue):(Timestamp, Array[Byte]) = {
     val buf : ByteBuffer = row.getValue
     var arr : Array[Byte] = new Array[Byte](buf.remaining)
     buf.get(arr)
+    buf.rewind
 
-    Row(Timestamp.valueOf(row.getTimestamp.getValue), arr)
+    (Timestamp.valueOf(row.getTimestamp.getValue), arr)
+  }
+
+  def toJava(row:(Timestamp, Array[Byte])):QdbBlobColumnValue = {
+    val buf : ByteBuffer = ByteBuffer.allocateDirect(row._2.length)
+    buf.put(row._2)
+    buf.rewind()
+
+    new QdbBlobColumnValue(row._1, buf)
+  }
+
+  def toRow(row:(Timestamp, Array[Byte])): Row = {
+    Row(row._1, row._2)
   }
 }

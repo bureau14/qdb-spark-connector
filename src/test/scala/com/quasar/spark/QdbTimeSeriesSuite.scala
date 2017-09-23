@@ -2,6 +2,7 @@ package com.quasardb.spark
 
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets.UTF_8
+import java.util.Arrays
 import java.sql.Timestamp
 import java.time.{Instant, LocalDateTime}
 
@@ -214,23 +215,55 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
     * Blob tests
     */
 
+  def hashBlobResults(x:Row):Row = {
+    Row(
+      x(0),
+      Arrays.hashCode(x.get(1).asInstanceOf[Array[Byte]]))
+  }
+
+  def hashBlobResults(x:(Timestamp, Array[Byte])):(Timestamp, Int) = {
+    (x._1, Arrays.hashCode(x._2))
+  }
+
+
   test("all blob data can be retrieved as an RDD") {
     val results = sqlContext
-      .qdbBlobColumn(qdbUri, table, blobColumn.getName, blobRanges).collect()
+      .qdbBlobColumn(qdbUri, table, blobColumn.getName, blobRanges)
+      .collect()
+      .map { x => hashBlobResults(x) }
 
-    for (expected <- blobCollection.asScala) {
-      results should contain(expected)
-    }
+    blobCollection
+      .asScala
+      .map { x =>
+        BlobRDD.fromJava(x)
+      }
+      .map { x =>
+        hashBlobResults(x)
+      }
+      .foreach { expected =>
+        results should contain(expected)
+      }
   }
+
 
   test("all blob data can be retrieved as a dataframe") {
     val df = sqlContext
       .qdbBlobColumnAsDataframe(qdbUri, table, blobColumn.getName, blobRanges)
 
-    val results = df.collect()
+    val results = df.collect().map { x => hashBlobResults(x) }
 
-    for (expected <- blobCollection.asScala) {
-      results should contain(BlobRDD.toRow(expected))
-    }
+    blobCollection
+      .asScala
+      .map { x =>
+        // First convert from native java to scala
+        BlobRDD.toRow(BlobRDD.fromJava(x))
+      }
+      .map { x =>
+        // Only use hashcodes
+        hashBlobResults(x)
+      }
+      .foreach { expected =>
+        results should contain(expected)
+      }
   }
 }
