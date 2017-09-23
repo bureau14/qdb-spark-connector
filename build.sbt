@@ -19,6 +19,7 @@ organizationHomepage := Some(url("https://www.quasardb.net"))
 libraryDependencies ++= Seq(
   "net.quasardb" % "qdb" % "2.1.0-SNAPSHOT",
   "net.quasardb" % "jni" % "2.1.0-SNAPSHOT",
+  "me.lessis" %% "retry" % "0.2.0",
   "org.scalatest" %% "scalatest" % "3.0.4" % "test",
   "com.novocode" % "junit-interface" % "0.9" % "test"
 )
