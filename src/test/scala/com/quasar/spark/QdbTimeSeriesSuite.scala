@@ -138,43 +138,43 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
     }
   }
 
-  // test("all double data can be retrieved as a dataframe") {
-  //   val results = sqlContext
-  //     .qdbDoubleColumnAsDataFrame(qdbUri, table, doubleColumn.getName, doubleRanges)
-  //     .collect()
+  test("all double data can be retrieved as a dataframe") {
+    val results = sqlContext
+      .qdbDoubleColumnAsDataFrame(qdbUri, table, doubleColumn.getName, doubleRanges)
+      .collect()
 
-  //   for (expected <- doubleCollection.asScala) {
-  //     results should contain(DoubleRDD.toRow(DoubleRDD.fromJava(expected)))
-  //   }
-  // }
+    for (expected <- doubleCollection.asScala) {
+      results should contain(DoubleRDD.toRow(DoubleRDD.fromJava(expected)))
+    }
+  }
 
-  // test("double data can be written as an RDD") {
-  //   // Define a new table with only the double column as definition
-  //   val newTable = java.util.UUID.randomUUID.toString
-  //   val series : QdbTimeSeries =
-  //     new QdbCluster(qdbUri)
-  //       .timeSeries(newTable)
-  //   val columns = List(doubleColumn)
+  test("double data can be written as an RDD") {
+    // Define a new table with only the double column as definition
+    val newTable = java.util.UUID.randomUUID.toString
+    val series : QdbTimeSeries =
+      new QdbCluster(qdbUri)
+        .timeSeries(newTable)
+    val columns = List(doubleColumn)
 
-  //   series.create(columns.asJava)
+    series.create(columns.asJava)
 
-  //   val dataSet = doubleCollection.asScala.map(DoubleRDD.fromJava).toList
+    val dataSet = doubleCollection.asScala.map(DoubleRDD.fromJava).toList
 
-  //   sqlContext
-  //     .sparkContext
-  //     .parallelize(dataSet)
-  //     .toQdbDoubleColumn(qdbUri, newTable, doubleColumn.getName)
+    sqlContext
+      .sparkContext
+      .parallelize(dataSet)
+      .toQdbDoubleColumn(qdbUri, newTable, doubleColumn.getName)
 
-  //   // Retrieve our test data
-  //   val results = sqlContext
-  //     .qdbDoubleColumn(qdbUri, newTable, doubleColumn.getName, doubleRanges)
-  //     .collect()
+    // Retrieve our test data
+    val results = sqlContext
+      .qdbDoubleColumn(qdbUri, newTable, doubleColumn.getName, doubleRanges)
+      .collect()
 
 
-  //   for (expected <- doubleCollection.asScala) {
-  //     results should contain(DoubleRDD.fromJava(expected))
-  //   }
-  // }
+    for (expected <- doubleCollection.asScala) {
+      results should contain(DoubleRDD.fromJava(expected))
+    }
+  }
 
   // test("double data can be written as a dataframe") {
 
@@ -212,25 +212,25 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
 
   /**
     * Blob tests
-  //   */
+    */
 
-  // test("all blob data can be retrieved as an RDD") {
-  //   val results = sqlContext
-  //     .qdbBlobColumn(qdbUri, table, blobColumn.getName, blobRanges).collect()
+  test("all blob data can be retrieved as an RDD") {
+    val results = sqlContext
+      .qdbBlobColumn(qdbUri, table, blobColumn.getName, blobRanges).collect()
 
-  //   for (expected <- blobCollection.asScala) {
-  //     results should contain(expected)
-  //   }
-  // }
+    for (expected <- blobCollection.asScala) {
+      results should contain(expected)
+    }
+  }
 
-  // test("all blob data can be retrieved as a dataframe") {
-  //   val df = sqlContext
-  //     .qdbBlobColumnAsDataframe(qdbUri, table, blobColumn.getName, blobRanges)
+  test("all blob data can be retrieved as a dataframe") {
+    val df = sqlContext
+      .qdbBlobColumnAsDataframe(qdbUri, table, blobColumn.getName, blobRanges)
 
-  //   val results = df.collect()
+    val results = df.collect()
 
-  //   for (expected <- blobCollection.asScala) {
-  //     results should contain(BlobRDD.toRow(expected))
-  //   }
-  // }
+    for (expected <- blobCollection.asScala) {
+      results should contain(BlobRDD.toRow(expected))
+    }
+  }
 }
