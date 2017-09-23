@@ -33,7 +33,7 @@ class QdbTagsSuite extends FunSuite with BeforeAndAfterAll {
     val p = Process("qdb/bin/qdbd --security 0 -r " + dataRoot + " -a 127.0.0.1:" + qdbPort).run
 
     // :TODO: fix, proper 'wait for qdb to be alive'
-    Thread.sleep(500)
+    Thread.sleep(3000)
     p
   }
 
@@ -41,7 +41,7 @@ class QdbTagsSuite extends FunSuite with BeforeAndAfterAll {
     p.destroy
 
     // :TODO: fix, proper 'wait for qdb to be dead'
-    Thread.sleep(500)
+    Thread.sleep(3000)
   }
 
   override protected def beforeAll(): Unit = {

@@ -52,7 +52,7 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
     val p = Process("qdb/bin/qdbd --security 0 -r " + dataRoot + " -a 127.0.0.1:" + qdbPort).run
 
     // :TODO: fix, proper 'wait for qdb to be alive'
-    Thread.sleep(500)
+    Thread.sleep(3000)
     p
   }
 
@@ -60,14 +60,13 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
     p.destroy
 
     // :TODO: fix, proper 'wait for qdb to be dead'
-    Thread.sleep(500)
+    Thread.sleep(3000)
   }
 
   override protected def beforeAll(): Unit = {
     super.beforeAll()
 
 
-    println("beforeAll for timeseries..")
     qdbProc = launchQdb
 
     sqlContext = new SQLContext(new SparkContext("local[2]", "QdbTimeSeriesSuite"))
@@ -130,19 +129,13 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
     */
 
   test("all double data can be retrieved as an RDD") {
-    println("1 in test for timeseries..")
-
     val results = sqlContext
       .qdbDoubleColumn(qdbUri, table, doubleColumn.getName, doubleRanges)
       .collect()
 
-    println("2 in test for timeseries..")
-
     for (expected <- doubleCollection.asScala) {
       results should contain(DoubleRDD.fromJava(expected))
     }
-
-    println("3 in test for timeseries..")
   }
 
   // test("all double data can be retrieved as a dataframe") {
