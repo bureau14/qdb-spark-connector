@@ -43,7 +43,6 @@ class DoubleRDD(
         StructField("timestamp", TimestampType, false) ::
         StructField("value", DoubleType, false) :: Nil)
 
-
     sqlContext.createDataFrame(map(DoubleRDD.toRow), struct(Set("timestamp", "value")))
   }
 }

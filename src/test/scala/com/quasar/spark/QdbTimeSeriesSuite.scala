@@ -149,6 +149,22 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
     }
   }
 
+  test("all double data can be aggregated as an RDD") {
+    val results = sqlContext
+      .qdbAggregateDoubleColumn(
+        qdbUri,
+        table,
+        doubleColumn.getName,
+        List((
+          Timestamp.valueOf(doubleCollection.range().getBegin().getValue()),
+          Timestamp.valueOf(doubleCollection.range().getEnd().getValue().plusNanos(1)),
+          QdbAggregation.Type.COUNT)))
+      .collect()
+
+    results.length should equal(1)
+    results.head.count should equal(doubleCollection.size())
+  }
+
   test("double data can be written as an RDD") {
     // Define a new table with only the double column as definition
     val newTable = java.util.UUID.randomUUID.toString
