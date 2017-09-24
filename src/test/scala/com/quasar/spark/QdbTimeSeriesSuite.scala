@@ -215,13 +215,13 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
     * Blob tests
     */
 
-  def hashBlobResults(x:Row):Row = {
+  def hashBlobResult(x:Row):Row = {
     Row(
       x(0),
       Arrays.hashCode(x.get(1).asInstanceOf[Array[Byte]]))
   }
 
-  def hashBlobResults(x:(Timestamp, Array[Byte])):(Timestamp, Int) = {
+  def hashBlobResult(x:(Timestamp, Array[Byte])):(Timestamp, Int) = {
     (x._1, Arrays.hashCode(x._2))
   }
 
@@ -230,7 +230,7 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
     val results = sqlContext
       .qdbBlobColumn(qdbUri, table, blobColumn.getName, blobRanges)
       .collect()
-      .map { x => hashBlobResults(x) }
+      .map { x => hashBlobResult(x) }
 
     blobCollection
       .asScala
@@ -238,7 +238,7 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
         BlobRDD.fromJava(x)
       }
       .map { x =>
-        hashBlobResults(x)
+        hashBlobResult(x)
       }
       .foreach { expected =>
         results should contain(expected)
@@ -250,7 +250,11 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
     val df = sqlContext
       .qdbBlobColumnAsDataframe(qdbUri, table, blobColumn.getName, blobRanges)
 
-    val results = df.collect().map { x => hashBlobResults(x) }
+    val results = df
+      .collect()
+      .map {
+        x => hashBlobResult(x)
+      }
 
     blobCollection
       .asScala
@@ -260,7 +264,44 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
       }
       .map { x =>
         // Only use hashcodes
-        hashBlobResults(x)
+        hashBlobResult(x)
+      }
+      .foreach { expected =>
+        results should contain(expected)
+      }
+  }
+
+  test("blob data can be written as an RDD") {
+    // Define a new table with only the double column as definition
+    val newTable = java.util.UUID.randomUUID.toString
+    val series : QdbTimeSeries =
+      new QdbCluster(qdbUri)
+        .timeSeries(newTable)
+    val columns = List(blobColumn)
+
+    series.create(columns.asJava)
+
+    val dataSet = blobCollection.asScala.map(BlobRDD.fromJava).toList
+
+    sqlContext
+      .sparkContext
+      .parallelize(dataSet)
+      .toQdbBlobColumn(qdbUri, newTable, blobColumn.getName)
+
+    // Retrieve our test data
+    val results = sqlContext
+      .qdbBlobColumn(qdbUri, newTable, blobColumn.getName, blobRanges)
+      .collect()
+      .map { x =>
+        hashBlobResult(x)
+      }
+
+    blobCollection
+      .asScala
+      .map { x =>
+        BlobRDD.fromJava(x) }
+      .map { x =>
+        hashBlobResult(x)
       }
       .foreach { expected =>
         results should contain(expected)
