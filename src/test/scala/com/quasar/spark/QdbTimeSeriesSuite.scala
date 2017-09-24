@@ -203,7 +203,6 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
       .foreach { expected =>
       results should contain(expected)
       }
-
   }
 
   /**
@@ -239,7 +238,7 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
 
   test("all blob data can be retrieved as a dataframe") {
     val df = sqlContext
-      .qdbBlobColumnAsDataframe(qdbUri, table, blobColumn.getName, blobRanges)
+      .qdbBlobColumnAsDataFrame(qdbUri, table, blobColumn.getName, blobRanges)
 
     val results = df
       .collect()
@@ -286,6 +285,34 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
       .map(hashBlobResult)
       .foreach { expected =>
         results should contain(expected)
+      }
+  }
+
+  test("blob data can be written as a dataframe") {
+    // Define a new table with only the blob column as definition
+    val newTable = java.util.UUID.randomUUID.toString
+    val series : QdbTimeSeries =
+      new QdbCluster(qdbUri)
+        .timeSeries(newTable)
+    val columns = List(blobColumn)
+
+    series.create(columns.asJava)
+
+    sqlContext
+      .qdbBlobColumnAsDataFrame(qdbUri, table, blobColumn.getName, blobRanges)
+      .toQdbBlobColumn(qdbUri, newTable, blobColumn.getName)
+
+    // Retrieve our test data
+    val results = sqlContext
+      .qdbBlobColumnAsDataFrame(qdbUri, newTable, blobColumn.getName, blobRanges)
+      .collect()
+
+    blobCollection
+      .asScala
+      .map(BlobRDD.fromJava)
+      .map(BlobRDD.toRow)
+      .foreach { expected =>
+      results should contain(expected)
       }
   }
 }

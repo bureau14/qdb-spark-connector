@@ -61,6 +61,10 @@ object BlobRDD {
     new QdbBlobColumnValue(row._1, buf)
   }
 
+  def fromRow(row:Row):(Timestamp, Array[Byte]) = {
+    (row.getTimestamp(0), row.getAs[Array[Byte]](1))
+  }
+
   def toRow(row:(Timestamp, Array[Byte])): Row = {
     Row(row._1, row._2)
   }

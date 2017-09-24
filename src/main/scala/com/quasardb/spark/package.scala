@@ -6,7 +6,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, SQLContext}
 
 import com.quasardb.spark.rdd._
-import com.quasardb.spark.rdd.ts.{DoubleRDD, DoubleRDDFunctions, DoubleDataFrameFunctions, BlobRDD, BlobRDDFunctions}
+import com.quasardb.spark.rdd.ts.{DoubleRDD, DoubleRDDFunctions, DoubleDataFrameFunctions, BlobRDD, BlobRDDFunctions, BlobDataFrameFunctions}
 
 import net.quasardb.qdb.QdbTimeRangeCollection
 
@@ -40,7 +40,7 @@ package object spark {
       new BlobRDD(sqlContext.sparkContext, uri, table, column, ranges)
     }
 
-    def qdbBlobColumnAsDataframe(uri: String,
+    def qdbBlobColumnAsDataFrame(uri: String,
                                  table: String,
                                  column: String,
                                  ranges: QdbTimeRangeCollection) = {
@@ -59,5 +59,9 @@ package object spark {
 
   implicit def toQdbBlobRDDFunctions[A <: (Timestamp, Array[Byte])](rdd: RDD[A]): BlobRDDFunctions[A] = {
     return new BlobRDDFunctions[A](rdd)
+  }
+
+  implicit def toQdbBlobDataFrameFunctions(data: DataFrame): BlobDataFrameFunctions = {
+    return new BlobDataFrameFunctions(data)
   }
 }
