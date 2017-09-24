@@ -35,6 +35,14 @@ package object spark {
       new DoubleAggregateRDD(sqlContext.sparkContext, uri, table, column, input)
     }
 
+    def qdbAggregateDoubleColumnAsDataFrame(
+      uri: String,
+      table: String,
+      column: String,
+      input: Seq[AggregateQuery]) = {
+      qdbAggregateDoubleColumn(uri, table, column, input)
+        .toDataFrame(sqlContext)
+    }
 
     def qdbDoubleColumnAsDataFrame(
       uri: String,
@@ -59,6 +67,15 @@ package object spark {
       column: String,
       input: Seq[AggregateQuery]) = {
       new BlobAggregateRDD(sqlContext.sparkContext, uri, table, column, input)
+    }
+
+    def qdbAggregateBlobColumnAsDataFrame(
+      uri: String,
+      table: String,
+      column: String,
+      input: Seq[AggregateQuery]) = {
+      qdbAggregateBlobColumn(uri, table, column, input)
+        .toDataFrame(sqlContext)
     }
 
     def qdbBlobColumnAsDataFrame(

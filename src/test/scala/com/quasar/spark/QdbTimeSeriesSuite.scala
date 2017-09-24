@@ -166,6 +166,23 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
     results.head.count should equal(doubleCollection.size())
   }
 
+  test("all double data can be aggregated as a DataFrame") {
+    val results = sqlContext
+      .qdbAggregateDoubleColumnAsDataFrame(
+        qdbUri,
+        table,
+        doubleColumn.getName,
+        List(
+          AggregateQuery(
+            begin = Timestamp.valueOf(doubleCollection.range().getBegin().getValue()),
+            end = Timestamp.valueOf(doubleCollection.range().getEnd().getValue().plusNanos(1)),
+            operation = QdbAggregation.Type.COUNT)))
+      .collect()
+
+    results.length should equal(1)
+    results.head.getLong(0) should equal(doubleCollection.size())
+  }
+
   test("double data can be written as an RDD") {
     // Define a new table with only the double column as definition
     val newTable = java.util.UUID.randomUUID.toString
@@ -288,6 +305,23 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
 
     results.length should equal(1)
     results.head.count should equal(blobCollection.size())
+  }
+
+  test("all blob data can be aggregated as a DataFrame") {
+    val results = sqlContext
+      .qdbAggregateBlobColumnAsDataFrame(
+        qdbUri,
+        table,
+        blobColumn.getName,
+        List(
+          AggregateQuery(
+            begin = Timestamp.valueOf(blobCollection.range().getBegin().getValue()),
+            end = Timestamp.valueOf(blobCollection.range().getEnd().getValue().plusNanos(1)),
+            operation = QdbAggregation.Type.COUNT)))
+      .collect()
+
+    results.length should equal(1)
+    results.head.getLong(0) should equal(blobCollection.size())
   }
 
   test("blob data can be written as an RDD") {
