@@ -1,7 +1,9 @@
 name := "qdb-spark-connector"
 version := "1.0.0-SNAPSHOT"
 
+resolvers += Resolver.mavenLocal
 resolvers += "QuasarDB Maven Repository" at "https://maven.quasardb.net/"
+resolvers += "softprops-maven" at "http://dl.bintray.com/content/softprops/maven"
 
 spName := "quasardb/spark-connector"
 scalaVersion := "2.11.7"
@@ -15,8 +17,11 @@ organizationName := "QuasarDB"
 organizationHomepage := Some(url("https://www.quasardb.net"))
 
 libraryDependencies ++= Seq(
-  "net.quasardb" % "jni" % "2.1.0-SNAPSHOT",
   "net.quasardb" % "qdb" % "2.1.0-SNAPSHOT",
+  "net.quasardb" % "jni" % "2.1.0-SNAPSHOT",
+  "me.lessis" %% "retry" % "0.2.0",
   "org.scalatest" %% "scalatest" % "3.0.4" % "test",
   "com.novocode" % "junit-interface" % "0.9" % "test"
 )
+
+parallelExecution in Test := false

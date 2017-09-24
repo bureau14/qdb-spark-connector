@@ -1,5 +1,5 @@
-# qdb-spark-conenctor
-Official quasardb Spark Connector
+# qdb-spark-connector
+Official quasardb Spark connector.
 
 # Tests
 
