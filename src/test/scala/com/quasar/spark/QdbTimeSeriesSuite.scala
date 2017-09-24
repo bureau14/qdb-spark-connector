@@ -155,10 +155,11 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
         qdbUri,
         table,
         doubleColumn.getName,
-        List((
-          Timestamp.valueOf(doubleCollection.range().getBegin().getValue()),
-          Timestamp.valueOf(doubleCollection.range().getEnd().getValue().plusNanos(1)),
-          QdbAggregation.Type.COUNT)))
+        List(
+          AggregateQuery(
+            begin = Timestamp.valueOf(doubleCollection.range().getBegin().getValue()),
+            end = Timestamp.valueOf(doubleCollection.range().getEnd().getValue().plusNanos(1)),
+            operation = QdbAggregation.Type.COUNT)))
       .collect()
 
     results.length should equal(1)

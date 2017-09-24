@@ -6,7 +6,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, SQLContext}
 
 import com.quasardb.spark.rdd._
-import com.quasardb.spark.rdd.ts.{DoubleRDD, DoubleAggregateRDD, DoubleRDDFunctions, DoubleDataFrameFunctions, BlobRDD, BlobRDDFunctions, BlobDataFrameFunctions}
+import com.quasardb.spark.rdd.ts._
 
 import net.quasardb.qdb._
 
@@ -31,7 +31,7 @@ package object spark {
       uri: String,
       table: String,
       column: String,
-      input: Seq[(Timestamp, Timestamp, QdbAggregation.Type)]) = {
+      input: Seq[AggregateQuery]) = {
       new DoubleAggregateRDD(sqlContext.sparkContext, uri, table, column, input)
     }
 
