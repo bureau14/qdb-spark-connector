@@ -57,6 +57,10 @@ object DoubleRDD {
     new QdbDoubleColumnValue(row._1, row._2)
   }
 
+  def fromRow(row:Row):(Timestamp, Double) = {
+    (row.getTimestamp(0), row.getDouble(1))
+  }
+
   def toRow(row:(Timestamp, Double)): Row = {
     Row(row._1, row._2)
   }

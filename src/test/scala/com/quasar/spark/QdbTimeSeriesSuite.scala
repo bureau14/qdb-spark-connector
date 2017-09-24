@@ -177,39 +177,34 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
     }
   }
 
-  // test("double data can be written as a dataframe") {
+  test("double data can be written as a dataframe") {
+    // Define a new table with only the double column as definition
+    val newTable = java.util.UUID.randomUUID.toString
+    val series : QdbTimeSeries =
+      new QdbCluster(qdbUri)
+        .timeSeries(newTable)
+    val columns = List(doubleColumn)
 
-  //   // Define a new table with only the double column as definition
-  //   val newTable = java.util.UUID.randomUUID.toString
-  //   val series : QdbTimeSeries =
-  //     new QdbCluster(qdbUri)
-  //       .timeSeries(newTable)
-  //   val columns = List(doubleColumn)
+    series.create(columns.asJava)
 
-  //   series.create(columns.asJava)
+    sqlContext
+      .qdbDoubleColumnAsDataFrame(qdbUri, table, doubleColumn.getName, doubleRanges)
+      .toQdbDoubleColumn(qdbUri, newTable, doubleColumn.getName)
 
-  //   // Write our test data based on our input test data
-  //   val input = sqlContext
-  //     .qdbDoubleColumnAsDataFrame(qdbUri, table, doubleColumn.getName, doubleRanges)
-  //     .collect()
-  //   println("saved to qdb")
+    // Retrieve our test data
+    val results = sqlContext
+      .qdbDoubleColumnAsDataFrame(qdbUri, newTable, doubleColumn.getName, doubleRanges)
+      .collect()
 
-  //   // sqlContext
-  //   //   .sparkContext
-  //   //   .parallelize(dataSet)
-  //   //   .saveToQdbDoubleColumn(table, column)
+    doubleCollection
+      .asScala
+      .map(DoubleRDD.fromJava)
+      .map(DoubleRDD.toRow)
+      .foreach { expected =>
+      results should contain(expected)
+      }
 
-
-  //   // Retrieve our test data
-
-  //   val results = sqlContext
-  //     .qdbDoubleColumnAsDataFrame(qdbUri, newTable, doubleColumn.getName, doubleRanges)
-  //     .collect()
-
-  //   for (expected <- doubleCollection.asScala) {
-  //     results should contain(DoubleRDD.toRow(expected))
-  //   }
-  // }
+  }
 
   /**
     * Blob tests
@@ -234,12 +229,8 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
 
     blobCollection
       .asScala
-      .map { x =>
-        BlobRDD.fromJava(x)
-      }
-      .map { x =>
-        hashBlobResult(x)
-      }
+      .map(BlobRDD.fromJava)
+      .map(hashBlobResult)
       .foreach { expected =>
         results should contain(expected)
       }
@@ -258,14 +249,9 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
 
     blobCollection
       .asScala
-      .map { x =>
-        // First convert from native java to scala
-        BlobRDD.toRow(BlobRDD.fromJava(x))
-      }
-      .map { x =>
-        // Only use hashcodes
-        hashBlobResult(x)
-      }
+      .map(BlobRDD.fromJava)
+      .map(BlobRDD.toRow)
+      .map(hashBlobResult)
       .foreach { expected =>
         results should contain(expected)
       }
@@ -292,17 +278,12 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
     val results = sqlContext
       .qdbBlobColumn(qdbUri, newTable, blobColumn.getName, blobRanges)
       .collect()
-      .map { x =>
-        hashBlobResult(x)
-      }
+      .map(hashBlobResult)
 
     blobCollection
       .asScala
-      .map { x =>
-        BlobRDD.fromJava(x) }
-      .map { x =>
-        hashBlobResult(x)
-      }
+      .map(BlobRDD.fromJava)
+      .map(hashBlobResult)
       .foreach { expected =>
         results should contain(expected)
       }
