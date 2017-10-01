@@ -72,6 +72,70 @@ val df = sqlContext
   .collect
 ```
 
+## Aggregating using an RDD
+
+QuasarDB exposes its native aggregation capabilities as RDD using the implicit methods `qdbAggregateDoubleColumn` and `qdbAggregateBlobColumn` that requires passing a `qdbUri`, `tableName`, `columnName` and a sequence of `AggregateQuery`. It returns exactly one result row for each `AggregateQuery` provided.
+
+```scala
+import java.sql.Timestamp
+import org.apache.spark.SparkContext
+import org.apache.spark.sql.SQLContext
+import net.quasardb.qdb.QdbAggregation
+import com.quasardb.spark._
+import com.quasardb.spark.rdd.AggregateQuery
+
+val qdbUri = "qdb://127.0.01:2836"
+val sc = new SparkContext("local", "qdb-test")
+val sqlContext = new SQLContext(sc)
+
+val results = sqlContext
+  .qdbAggregateDoubleColumn(
+    qdbUri,
+    "doubles_test",
+    "value",
+    List(
+      AggregateQuery(
+        begin = Timestamp.valueOf("2017-10-01 12:09:03"),
+        end = = Timestamp.valueOf("2017-10-01 12:09:07"),
+        operation = QdbAggregation.Type.COUNT))        
+  .collect
+
+results.length should equal(1)
+results.head.count should equal(doubleCollection.size)
+```
+
+## Aggregating using a DataFrame
+
+QuasarDB exposes its native aggregation capabilities as DataFrame using the implicit methods `qdbAggregateDoubleColumnAsDataFrame` and `qdbAggregateBlobColumnAsDataFrame` that requires passing a `qdbUri`, `tableName`, `columnName` and a sequence of `AggregateQuery`. It returns exactly one result row for each `AggregateQuery` provided.
+
+```scala
+import java.sql.Timestamp
+import org.apache.spark.SparkContext
+import org.apache.spark.sql.SQLContext
+import net.quasardb.qdb.QdbAggregation
+import com.quasardb.spark._
+import com.quasardb.spark.rdd.AggregateQuery
+
+val qdbUri = "qdb://127.0.01:2836"
+val sc = new SparkContext("local", "qdb-test")
+val sqlContext = new SQLContext(sc)
+
+val results = sqlContext
+  .qdbAggregateDoubleColumnAsDataFrame(
+    qdbUri,
+    "doubles_test",
+    "value",
+    List(
+      AggregateQuery(
+        begin = Timestamp.valueOf("2017-10-01 12:09:03"),
+        end = = Timestamp.valueOf("2017-10-01 12:09:07"),
+        operation = QdbAggregation.Type.COUNT))        
+  .collect
+
+results.length should equal(1)
+results.head.getLong(0) should equal(doubleCollection.size)
+```
+
 # Writing to QuasarDB
 
 ## Writing using an RDD
