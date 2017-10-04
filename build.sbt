@@ -6,7 +6,7 @@ resolvers += "QuasarDB Maven Repository" at "https://maven.quasardb.net/"
 resolvers += "softprops-maven" at "http://dl.bintray.com/content/softprops/maven"
 
 spName := "quasardb/spark-connector"
-scalaVersion := "2.11.7"
+scalaVersion := "2.10.6"
 crossScalaVersions := Seq("2.10.5", "2.11.7")
 
 sparkVersion := "2.2.0"
