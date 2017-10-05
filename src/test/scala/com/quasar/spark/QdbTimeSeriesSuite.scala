@@ -183,6 +183,35 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
     results.head.getLong(0) should equal(doubleCollection.size())
   }
 
+  test("double data can be written in parallel as an RDD") {
+    // Define a new table with only the double column as definition
+    val newTable = java.util.UUID.randomUUID.toString
+    val series : QdbTimeSeries =
+      new QdbCluster(qdbUri)
+        .timeSeries(newTable)
+    val columns = List(doubleColumn)
+
+    series.create(columns.asJava)
+
+    val dataSet =
+      doubleCollection.asScala.map(DoubleRDD.fromJava).toList
+
+    sqlContext
+      .sparkContext
+      .parallelize(dataSet)
+      .toQdbDoubleColumn(qdbUri, newTable, doubleColumn.getName)
+
+    // Retrieve our test data
+    val results = sqlContext
+      .qdbDoubleColumn(qdbUri, newTable, doubleColumn.getName, doubleRanges)
+      .collect()
+
+
+    for (expected <- doubleCollection.asScala) {
+      results should contain(DoubleRDD.fromJava(expected))
+    }
+  }
+
   test("double data can be copied as an RDD") {
     // Define a new table with only the double column as definition
     val newTable = java.util.UUID.randomUUID.toString
