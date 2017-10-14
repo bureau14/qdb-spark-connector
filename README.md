@@ -12,6 +12,19 @@ Given a QuasarDB timeseries table `doubles_test` that looks as follows
 | 2017-10-01 12:09:05 | 5.6789012 |
 | 2017-10-01 12:09:06 | 2.1098765 |
 
+You can specify credentials for connecting to the QuasarDB cluster using the implicit value `Option[QdbCluster.SecurityOptions]` as follows:
+
+```scala
+implicit val securityOptions : Option[QdbCluster.SecurityOptions] =
+  Some(new QdbCluster.SecurityOptions("your-user-id", "your-user-private-key", "your-cluster-public-key"))
+```
+
+If you're running your QuasarDB cluster with security disabled, you can set this implicit value to None:
+
+```scala
+implicit val securityOptions : Option[QdbCluster.SecurityOptions] = None
+```
+
 ## Querying using RDD
 
 The `qdbDoubleColumn` is an implicit method on an RDD[(Timestamp, Double)], and the `qdbBlobColumn` is an implicit method on an RDD[(Timestamp, Array[Byte])). Both methods require explicitly passing a `qdbUri`, a `tableName`, a `columnName` and a `QdbTimeRangeCollection` as demonstrated below.
