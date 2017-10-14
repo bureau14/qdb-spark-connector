@@ -207,13 +207,15 @@ val df = sqlContext
 
 # Tests
 
-In order to run the tests, please download the latest quasardb-server and extract in a `qdb` subdirectory like this:
+In order to run the tests, please download the latest quasardb-server, JNI jars and Java API jars, and extract in a `qdb` subdirectory like this:
 
 ```
 mkdir qdb
 cd qdb
 wget https:////download.quasardb.net/quasardb/2.1/2.1.0-beta.1/server/qdb-2.1.0master-darwin-64bit-server.tar.gz
 tar -xzf qdb-2.1.0master-darwin-64bit-server.tar.gz
+wget https://maven.quasardb.net/net/quasardb/jni/2.1.0-SNAPSHOT/jni-2.1.0-VERSION-ARCHITECTURE-x64.jar
+wget https://maven.quasardb.net/net/quasardb/qdb/2.1.0-SNAPSHOT/qdb-2.1.0-VERSION.jar
 ```
 
 Then launch the integration test using sbt:
