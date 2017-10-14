@@ -33,7 +33,7 @@ The `qdbDoubleColumn` is an implicit method on an RDD[(Timestamp, Double)], and 
 import java.sql.Timestamp
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
-import com.quasardb.spark._
+import net.quasardb.spark._
 import net.quasardb.qdb.QdbTimeRangeCollection
 
 val qdbUri = "qdb://127.0.01:2836"
@@ -63,7 +63,7 @@ The `qdbDoubleColumnAsDataFrame` and the `qdbBlobColumnAsDataFrame` allows query
 import java.sql.Timestamp
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
-import com.quasardb.spark._
+import net.quasardb.spark._
 import net.quasardb.qdb.QdbTimeRangeCollection
 
 val qdbUri = "qdb://127.0.01:2836"
@@ -94,8 +94,8 @@ import java.sql.Timestamp
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
 import net.quasardb.qdb.QdbAggregation
-import com.quasardb.spark._
-import com.quasardb.spark.rdd.AggregateQuery
+import net.quasardb.spark._
+import net.quasardb.spark.rdd.AggregateQuery
 
 val qdbUri = "qdb://127.0.01:2836"
 val sc = new SparkContext("local", "qdb-test")
@@ -126,8 +126,8 @@ import java.sql.Timestamp
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
 import net.quasardb.qdb.QdbAggregation
-import com.quasardb.spark._
-import com.quasardb.spark.rdd.AggregateQuery
+import net.quasardb.spark._
+import net.quasardb.spark.rdd.AggregateQuery
 
 val qdbUri = "qdb://127.0.01:2836"
 val sc = new SparkContext("local", "qdb-test")
@@ -157,7 +157,7 @@ results.head.getLong(0) should equal(doubleCollection.size)
 import java.sql.Timestamp
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
-import com.quasardb.spark._
+import net.quasardb.spark._
 
 val qdbUri = "qdb://127.0.01:2836"    
 val sc = new SparkContext("local", "qdb-test")
@@ -183,7 +183,7 @@ The code example below copies all the data from the `doubles_test` table into th
 import java.sql.Timestamp
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
-import com.quasardb.spark._
+import net.quasardb.spark._
 import net.quasardb.qdb.QdbTimeRangeCollection
 
 val qdbUri = "qdb://127.0.01:2836"
