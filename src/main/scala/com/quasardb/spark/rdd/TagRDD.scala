@@ -1,4 +1,4 @@
-package com.quasardb.spark.rdd
+package net.quasardb.spark.rdd
 
 import scala.collection.JavaConversions._
 import org.apache.spark.rdd.RDD
@@ -7,8 +7,8 @@ import org.apache.spark._
 import net.quasardb.qdb._
 
 
-import com.quasardb.spark.partitioner._
-import com.quasardb.spark.rdd.Util
+import net.quasardb.spark.partitioner._
+import net.quasardb.spark.rdd.Util
 
 class QdbTagRDD(
   sc: SparkContext,

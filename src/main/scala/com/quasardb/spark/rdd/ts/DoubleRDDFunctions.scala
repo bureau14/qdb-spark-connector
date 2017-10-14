@@ -1,10 +1,10 @@
-package com.quasardb.spark.rdd.ts
+package net.quasardb.spark.rdd.ts
 
 import java.sql.Timestamp
 import org.apache.spark.rdd.RDD
 
 import net.quasardb.qdb._
-import com.quasardb.spark.rdd.Util
+import net.quasardb.spark.rdd.Util
 
 class DoubleRDDFunctions[A <: (Timestamp, Double)](data: RDD[A]) extends Serializable {
 

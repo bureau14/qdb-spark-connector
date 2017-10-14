@@ -1,4 +1,4 @@
-package com.quasardb.spark.rdd.ts
+package net.quasardb.spark.rdd.ts
 
 import java.nio.ByteBuffer
 import java.sql.Timestamp
@@ -10,8 +10,8 @@ import org.apache.spark.sql.types._
 import org.apache.spark._
 
 import net.quasardb.qdb._
-import com.quasardb.spark.partitioner._
-import com.quasardb.spark.rdd.Util
+import net.quasardb.spark.partitioner._
+import net.quasardb.spark.rdd.Util
 
 class BlobRDD(
   sc: SparkContext,

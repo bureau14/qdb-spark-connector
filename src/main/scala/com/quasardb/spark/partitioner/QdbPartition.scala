@@ -1,4 +1,4 @@
-package com.quasardb.spark.partitioner
+package net.quasardb.spark.partitioner
 
 import java.net.InetAddress
 import java.util

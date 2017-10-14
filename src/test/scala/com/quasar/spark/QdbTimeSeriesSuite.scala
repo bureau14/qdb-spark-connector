@@ -1,4 +1,4 @@
-package com.quasardb.spark
+package net.quasardb.spark
 
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets.UTF_8
@@ -14,9 +14,9 @@ import org.scalatest.Matchers._
 
 import net.quasardb.qdb._;
 
-import com.quasardb.spark._
-import com.quasardb.spark.rdd._
-import com.quasardb.spark.rdd.ts.{DoubleRDD, DoubleRDDFunctions, BlobRDD}
+import net.quasardb.spark._
+import net.quasardb.spark.rdd._
+import net.quasardb.spark.rdd.ts.{DoubleRDD, DoubleRDDFunctions, BlobRDD}
 
 import scala.language.implicitConversions
 import scala.collection.JavaConverters._

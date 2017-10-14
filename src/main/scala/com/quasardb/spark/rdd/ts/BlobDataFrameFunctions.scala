@@ -1,11 +1,11 @@
-package com.quasardb.spark.rdd.ts
+package net.quasardb.spark.rdd.ts
 
 import java.sql.Timestamp
 import org.apache.spark.sql.DataFrame
 
 import net.quasardb.qdb._
-import com.quasardb.spark.rdd.Util
-import com.quasardb.spark.rdd.ts.BlobRDD
+import net.quasardb.spark.rdd.Util
+import net.quasardb.spark.rdd.ts.BlobRDD
 
 class BlobDataFrameFunctions(data: DataFrame) extends Serializable {
 

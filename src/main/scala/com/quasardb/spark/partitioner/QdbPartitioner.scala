@@ -1,4 +1,4 @@
-package com.quasardb.spark.partitioner
+package net.quasardb.spark.partitioner
 
 import net.quasardb.qdb._
 import org.apache.spark.Partition

@@ -1,4 +1,4 @@
-package com.quasardb.spark.rdd
+package net.quasardb.spark.rdd
 
 import java.sql.Timestamp
 
@@ -10,7 +10,7 @@ import odelay.Timer
 
 import net.quasardb.qdb._
 
-import com.quasardb.spark.rdd.ts.{DoubleRDD, BlobRDD}
+import net.quasardb.spark.rdd.ts.{DoubleRDD, BlobRDD}
 
 import retry._
 import retry.Success

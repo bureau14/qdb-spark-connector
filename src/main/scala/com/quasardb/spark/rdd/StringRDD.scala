@@ -1,4 +1,4 @@
-package com.quasardb.spark.rdd
+package net.quasardb.spark.rdd
 
 import java.nio.charset.StandardCharsets.UTF_8
 import org.apache.spark.rdd.RDD
@@ -11,8 +11,8 @@ import net.quasardb.qdb._
 import scala.collection.JavaConversions._
 import scala.reflect.ClassTag
 
-import com.quasardb.spark.rdd.Util
-import com.quasardb.spark.partitioner._
+import net.quasardb.spark.rdd.Util
+import net.quasardb.spark.partitioner._
 
 class QdbStringRDD(prev: RDD[String])(implicit securityOptions : Option[QdbCluster.SecurityOptions])
     extends RDD[(String, String)](prev) {

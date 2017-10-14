@@ -1,4 +1,4 @@
-package com.quasardb.spark.rdd.ts
+package net.quasardb.spark.rdd.ts
 
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{SQLContext, Row, DataFrame}
@@ -14,8 +14,8 @@ import net.quasardb.qdb._
 import scala.collection.JavaConversions._
 import scala.reflect.ClassTag
 
-import com.quasardb.spark.rdd.{AggregateQuery, Util}
-import com.quasardb.spark.partitioner._
+import net.quasardb.spark.rdd.{AggregateQuery, Util}
+import net.quasardb.spark.partitioner._
 
 case class BlobAggregation(
   count: Long,

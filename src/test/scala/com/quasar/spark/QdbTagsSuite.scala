@@ -1,4 +1,4 @@
-package com.quasardb.spark
+package net.quasardb.spark
 
 import java.nio.ByteBuffer
 
@@ -9,8 +9,8 @@ import org.scalatest.{BeforeAndAfterAll, FunSuite}
 
 import net.quasardb.qdb._;
 
-import com.quasardb.spark._
-import com.quasardb.spark.rdd._
+import net.quasardb.spark._
+import net.quasardb.spark.rdd._
 import scala.sys.process._
 
 import scala.language.implicitConversions

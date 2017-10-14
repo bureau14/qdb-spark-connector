@@ -1,4 +1,4 @@
-package com.quasardb.spark.rdd
+package net.quasardb.spark.rdd
 
 import java.sql.Timestamp
 

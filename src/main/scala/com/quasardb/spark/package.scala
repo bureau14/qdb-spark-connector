@@ -1,12 +1,12 @@
-package com.quasardb
+package net.quasardb
 
 import java.sql.Timestamp
 
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, SQLContext}
 
-import com.quasardb.spark.rdd._
-import com.quasardb.spark.rdd.ts._
+import net.quasardb.spark.rdd._
+import net.quasardb.spark.rdd.ts._
 
 import net.quasardb.qdb._
 
