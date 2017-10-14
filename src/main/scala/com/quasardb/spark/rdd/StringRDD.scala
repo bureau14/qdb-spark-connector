@@ -11,9 +11,10 @@ import net.quasardb.qdb._
 import scala.collection.JavaConversions._
 import scala.reflect.ClassTag
 
+import com.quasardb.spark.rdd.Util
 import com.quasardb.spark.partitioner._
 
-class QdbStringRDD(prev: RDD[String])
+class QdbStringRDD(prev: RDD[String])(implicit securityOptions : Option[QdbCluster.SecurityOptions])
     extends RDD[(String, String)](prev) {
 
   override protected def getPartitions: Array[Partition] = prev.partitions
@@ -24,7 +25,7 @@ class QdbStringRDD(prev: RDD[String])
     val partition: QdbPartition = split.asInstanceOf[QdbPartition]
     val keys = firstParent[String].iterator(split, context)
 
-    val cluster = new QdbCluster(partition.uri)
+    val cluster = Util.createCluster(partition.uri)
 
     // TODO: limit query to only the Partition
 

@@ -15,13 +15,14 @@ import scala.collection.JavaConversions._
 import scala.reflect.ClassTag
 
 import com.quasardb.spark.partitioner._
+import com.quasardb.spark.rdd.Util
 
 class DoubleRDD(
   sc: SparkContext,
   val uri: String,
   val table: String,
   val column: String,
-  val ranges: QdbTimeRangeCollection)
+  val ranges: QdbTimeRangeCollection)(implicit securityOptions : Option[QdbCluster.SecurityOptions])
     extends RDD[(Timestamp, Double)](sc, Nil) {
 
   override protected def getPartitions = QdbPartitioner.computePartitions(uri)
@@ -31,7 +32,7 @@ class DoubleRDD(
     context: TaskContext): Iterator[(Timestamp, Double)] = {
     val partition: QdbPartition = split.asInstanceOf[QdbPartition]
 
-    val series: QdbTimeSeries = new QdbCluster(partition.uri).timeSeries(table)
+    val series: QdbTimeSeries = Util.createCluster(partition.uri).timeSeries(table)
 
     // TODO: limit query to only the Partition
     series.getDoubles(column, ranges).toList.map(DoubleRDD.fromJava).iterator

@@ -11,13 +11,14 @@ import org.apache.spark._
 
 import net.quasardb.qdb._
 import com.quasardb.spark.partitioner._
+import com.quasardb.spark.rdd.Util
 
 class BlobRDD(
   sc: SparkContext,
   val uri: String,
   val table: String,
   val column: String,
-  val ranges: QdbTimeRangeCollection)
+  val ranges: QdbTimeRangeCollection)(implicit securityOptions : Option[QdbCluster.SecurityOptions])
     extends RDD[(Timestamp, Array[Byte])](sc, Nil) {
 
   override protected def getPartitions = QdbPartitioner.computePartitions(uri)
@@ -27,7 +28,7 @@ class BlobRDD(
     context: TaskContext): Iterator[(Timestamp, Array[Byte])] = {
     val partition: QdbPartition = split.asInstanceOf[QdbPartition]
 
-    val series: QdbTimeSeries = new QdbCluster(partition.uri).timeSeries(table)
+    val series: QdbTimeSeries = Util.createCluster(partition.uri).timeSeries(table)
 
     // TODO: limit query to only the Partition
     series.getBlobs(column, ranges).toList.map(BlobRDD.fromJava).iterator

@@ -28,6 +28,12 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
 
   private var qdbPort: Int = 2837
   private var qdbProc: Process = _
+
+  implicit val securityOptions : Option[QdbCluster.SecurityOptions] =
+    Some(new QdbCluster.SecurityOptions("qdb-api-python",
+      "SoHHpH26NtZvfq5pqm/8BXKbVIkf+yYiVZ5fQbq1nbcI=",
+      "Pb+d1o3HuFtxEb5uTl9peU89ze9BZTK9f8KdKr4k7zGA="))
+
   private var qdbUri: String = "qdb://127.0.0.1:" + qdbPort
   private var sqlContext: SQLContext = _
   private var table: String = _
@@ -50,7 +56,7 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
 
   private def launchQdb():Process = {
     val dataRoot = java.nio.file.Files.createTempDirectory(java.util.UUID.randomUUID.toString).toString
-    val p = Process("qdb/bin/qdbd --security 0 -r " + dataRoot + " -a 127.0.0.1:" + qdbPort).run
+    val p = Process("qdb/bin/qdbd --cluster-private-file cluster-secret-key.txt --user-list users.txt -r " + dataRoot + " -a 127.0.0.1:" + qdbPort).run
 
     // :TODO: fix, proper 'wait for qdb to be alive'
     Thread.sleep(3000)
@@ -79,7 +85,7 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
 
     val columns = List(doubleColumn, blobColumn)
     val series : QdbTimeSeries =
-      new QdbCluster(qdbUri)
+      Util.createCluster(qdbUri)
         .timeSeries(table)
 
     series.create(columns.asJava)
@@ -187,7 +193,7 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
     // Define a new table with only the double column as definition
     val newTable = java.util.UUID.randomUUID.toString
     val series : QdbTimeSeries =
-      new QdbCluster(qdbUri)
+      Util.createCluster(qdbUri)
         .timeSeries(newTable)
     val columns = List(doubleColumn)
 
@@ -216,7 +222,7 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
     // Define a new table with only the double column as definition
     val newTable = java.util.UUID.randomUUID.toString
     val series : QdbTimeSeries =
-      new QdbCluster(qdbUri)
+      Util.createCluster(qdbUri)
         .timeSeries(newTable)
     val columns = List(doubleColumn)
 
@@ -241,7 +247,7 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
     // Define a new table with only the double column as definition
     val newTable = java.util.UUID.randomUUID.toString
     val series : QdbTimeSeries =
-      new QdbCluster(qdbUri)
+      Util.createCluster(qdbUri)
         .timeSeries(newTable)
     val columns = List(doubleColumn)
 
@@ -354,7 +360,7 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
     // Define a new table with only the double column as definition
     val newTable = java.util.UUID.randomUUID.toString
     val series : QdbTimeSeries =
-      new QdbCluster(qdbUri)
+      Util.createCluster(qdbUri)
         .timeSeries(newTable)
     val columns = List(blobColumn)
 
@@ -383,7 +389,7 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
     // Define a new table with only the blob column as definition
     val newTable = java.util.UUID.randomUUID.toString
     val series : QdbTimeSeries =
-      new QdbCluster(qdbUri)
+      Util.createCluster(qdbUri)
         .timeSeries(newTable)
     val columns = List(blobColumn)
 

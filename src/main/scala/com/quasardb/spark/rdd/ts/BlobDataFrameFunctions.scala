@@ -3,6 +3,7 @@ package com.quasardb.spark.rdd.ts
 import java.sql.Timestamp
 import org.apache.spark.sql.DataFrame
 
+import net.quasardb.qdb._
 import com.quasardb.spark.rdd.Util
 import com.quasardb.spark.rdd.ts.BlobRDD
 
@@ -11,7 +12,7 @@ class BlobDataFrameFunctions(data: DataFrame) extends Serializable {
   def toQdbBlobColumn(
     uri: String,
     table: String,
-    column: String) : Unit = {
+    column: String)(implicit securityOptions : Option[QdbCluster.SecurityOptions]) : Unit = {
 
     data
       .rdd

@@ -17,11 +17,17 @@ import retry.Success
 
 object Util {
 
+  def createCluster(uri: String)
+    (implicit securityOptions : Option[QdbCluster.SecurityOptions]) : QdbCluster = securityOptions match {
+    case Some(securityOptions) => new QdbCluster(uri, securityOptions)
+    case None => new QdbCluster(uri)
+  }
+
   def insertDoubles(
     uri: String,
     table: String,
     column: String,
-    values: Iterator[(Timestamp, Double)]): Unit = {
+    values: Iterator[(Timestamp, Double)])(implicit securityOptions : Option[QdbCluster.SecurityOptions]): Unit = {
 
     var collection = new QdbDoubleColumnCollection(column)
     collection.addAll(values.map(DoubleRDD.toJava).toList)
@@ -32,7 +38,7 @@ object Util {
     val future = retry.Backoff(8, 50.millis)(timer) { () =>
 
       try {
-        new QdbCluster(uri)
+        createCluster(uri)
           .timeSeries(table)
           .insertDoubles(collection)
 
@@ -52,7 +58,7 @@ object Util {
     uri: String,
     table: String,
     column: String,
-    values: Iterator[(Timestamp, Array[Byte])]): Unit = {
+    values: Iterator[(Timestamp, Array[Byte])])(implicit securityOption : Option[QdbCluster.SecurityOptions]): Unit = {
 
     var collection = new QdbBlobColumnCollection(column)
     collection.addAll(values.map(BlobRDD.toJava).toList)
@@ -63,7 +69,7 @@ object Util {
     val future = retry.Backoff(8, 50.millis)(timer) { () =>
 
       try {
-        new QdbCluster(uri)
+        createCluster(uri)
           .timeSeries(table)
           .insertBlobs(collection)
 
