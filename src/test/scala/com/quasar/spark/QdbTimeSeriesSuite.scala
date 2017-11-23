@@ -88,7 +88,7 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
       Util.createCluster(qdbUri)
         .timeSeries(table)
 
-    series.create(columns.asJava)
+    series.create(1000, columns.asJava)
 
     val r = scala.util.Random
     // Seed it with random doubles and blobs
@@ -106,14 +106,14 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
     doubleRanges.add(
       new QdbTimeRange(
         doubleRange.getBegin,
-        new QdbTimespec(doubleRange.getEnd.getValue.plusNanos(1))))
+        new QdbTimespec(doubleRange.getEnd.asLocalDateTime.plusNanos(1))))
 
 
     val blobRange = blobCollection.range()
     blobRanges.add(
       new QdbTimeRange(
         blobRange.getBegin,
-        new QdbTimespec(blobRange.getEnd.getValue.plusNanos(1))))
+        new QdbTimespec(blobRange.getEnd.asLocalDateTime.plusNanos(1))))
 
   }
 
@@ -163,8 +163,8 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
         doubleColumn.getName,
         List(
           AggregateQuery(
-            begin = Timestamp.valueOf(doubleCollection.range().getBegin().getValue()),
-            end = Timestamp.valueOf(doubleCollection.range().getEnd().getValue().plusNanos(1)),
+            begin = doubleCollection.range().getBegin().asTimestamp(),
+            end = Timestamp.valueOf(doubleCollection.range().getEnd().asLocalDateTime().plusNanos(1)),
             operation = QdbAggregation.Type.COUNT)))
       .collect()
 
@@ -180,8 +180,8 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
         doubleColumn.getName,
         List(
           AggregateQuery(
-            begin = Timestamp.valueOf(doubleCollection.range().getBegin().getValue()),
-            end = Timestamp.valueOf(doubleCollection.range().getEnd().getValue().plusNanos(1)),
+            begin = doubleCollection.range().getBegin().asTimestamp(),
+            end = Timestamp.valueOf(doubleCollection.range().getEnd().asLocalDateTime().plusNanos(1)),
             operation = QdbAggregation.Type.COUNT)))
       .collect()
 
@@ -197,7 +197,7 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
         .timeSeries(newTable)
     val columns = List(doubleColumn)
 
-    series.create(columns.asJava)
+    series.create(1000, columns.asJava)
 
     val dataSet =
       doubleCollection.asScala.map(DoubleRDD.fromJava).toList
@@ -226,7 +226,7 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
         .timeSeries(newTable)
     val columns = List(doubleColumn)
 
-    series.create(columns.asJava)
+    series.create(1000, columns.asJava)
 
     sqlContext
       .qdbDoubleColumn(qdbUri, table, doubleColumn.getName, doubleRanges)
@@ -251,7 +251,7 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
         .timeSeries(newTable)
     val columns = List(doubleColumn)
 
-    series.create(columns.asJava)
+    series.create(1000, columns.asJava)
 
     sqlContext
       .qdbDoubleColumnAsDataFrame(qdbUri, table, doubleColumn.getName, doubleRanges)
@@ -330,8 +330,8 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
         blobColumn.getName,
         List(
           AggregateQuery(
-            begin = Timestamp.valueOf(blobCollection.range().getBegin().getValue()),
-            end = Timestamp.valueOf(blobCollection.range().getEnd().getValue().plusNanos(1)),
+            begin = blobCollection.range().getBegin().asTimestamp(),
+            end = Timestamp.valueOf(blobCollection.range().getEnd().asLocalDateTime().plusNanos(1)),
             operation = QdbAggregation.Type.COUNT)))
       .collect()
 
@@ -347,8 +347,8 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
         blobColumn.getName,
         List(
           AggregateQuery(
-            begin = Timestamp.valueOf(blobCollection.range().getBegin().getValue()),
-            end = Timestamp.valueOf(blobCollection.range().getEnd().getValue().plusNanos(1)),
+            begin = blobCollection.range().getBegin().asTimestamp(),
+            end = Timestamp.valueOf(blobCollection.range().getEnd().asLocalDateTime().plusNanos(1)),
             operation = QdbAggregation.Type.COUNT)))
       .collect()
 
@@ -364,7 +364,7 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
         .timeSeries(newTable)
     val columns = List(blobColumn)
 
-    series.create(columns.asJava)
+    series.create(1000, columns.asJava)
 
     sqlContext
       .qdbBlobColumn(qdbUri, table, blobColumn.getName, blobRanges)
@@ -393,7 +393,7 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
         .timeSeries(newTable)
     val columns = List(blobColumn)
 
-    series.create(columns.asJava)
+    series.create(1000, columns.asJava)
 
     sqlContext
       .qdbBlobColumnAsDataFrame(qdbUri, table, blobColumn.getName, blobRanges)

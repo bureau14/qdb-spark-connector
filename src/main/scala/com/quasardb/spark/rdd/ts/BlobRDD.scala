@@ -51,7 +51,7 @@ object BlobRDD {
     buf.get(arr)
     buf.rewind
 
-    (Timestamp.valueOf(row.getTimestamp.getValue), arr)
+    (row.getTimestamp.asTimestamp, arr)
   }
 
   def toJava(row:(Timestamp, Array[Byte])):QdbBlobColumnValue = {

@@ -50,7 +50,7 @@ class DoubleRDD(
 
 object DoubleRDD {
   def fromJava(row:QdbDoubleColumnValue):(Timestamp, Double) = {
-    (Timestamp.valueOf(row.getTimestamp.getValue), row.getValue)
+    (row.getTimestamp.asTimestamp, row.getValue)
   }
 
   def toJava(row:(Timestamp, Double)):QdbDoubleColumnValue = {
