@@ -18,6 +18,10 @@ import net.quasardb.spark.rdd.{AggregateQuery, Util}
 import net.quasardb.spark.partitioner._
 
 case class DoubleAggregation(
+  table: String,
+  column: String,
+  begin: Timestamp,
+  end: Timestamp,
   count: Long,
   result: Double
 ) extends Serializable
@@ -53,28 +57,40 @@ class DoubleAggregateRDD(
     val series: QdbTimeSeries = Util.createCluster(partition.uri).timeSeries(table)
 
     // TODO: limit query to only the Partition
-    series.doubleAggregate(column, aggregate).toList.map(DoubleAggregateRDD.fromJava).iterator
+    series.doubleAggregate(column, aggregate).toList.map(DoubleAggregateRDD.fromJava(table, column)).iterator
   }
 
   def toDataFrame(sqlContext: SQLContext): DataFrame = {
     val struct =
       StructType(
+        StructField("table", StringType, true) ::
+        StructField("column", StringType, true) ::
+        StructField("begin", TimestampType, true) ::
+        StructField("end", TimestampType, true) ::
         StructField("count", LongType, true) ::
         StructField("result", DoubleType, true) :: Nil)
 
-    sqlContext.createDataFrame(map(DoubleAggregateRDD.toRow), struct(Set("count", "result")))
+    sqlContext.createDataFrame(map(DoubleAggregateRDD.toRow), struct(Set("table", "column", "begin", "end", "count", "result")))
   }
 }
 
 object DoubleAggregateRDD {
-  def fromJava(row:QdbDoubleAggregation):DoubleAggregation = {
+  def fromJava(table:String, column:String)(row:QdbDoubleAggregation):DoubleAggregation = {
     DoubleAggregation(
+      table,
+      column,
+      row.getRange.getBegin.asTimestamp,
+      row.getRange.getEnd.asTimestamp,
       row.getCount,
       row.getResult.getValue)
   }
 
-  def toRow(row:DoubleAggregation): Row = {
+  def toRow(row : DoubleAggregation): Row = {
     Row(
+      row.table,
+      row.column,
+      row.begin,
+      row.end,
       row.count,
       row.result)
   }
