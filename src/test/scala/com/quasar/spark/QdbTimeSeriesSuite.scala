@@ -28,6 +28,7 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
 
   private var qdbPort: Int = 2837
   private var qdbProc: Process = _
+  private var defaultShardSize: Long = 1000 * 60 * 60 * 24 // 24 hours
 
   implicit val securityOptions : Option[QdbCluster.SecurityOptions] =
     Some(new QdbCluster.SecurityOptions("qdb-api-python",
@@ -88,7 +89,7 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
       Util.createCluster(qdbUri)
         .timeSeries(table)
 
-    series.create(1000, columns.asJava)
+    series.create(defaultShardSize, columns.asJava)
 
     val r = scala.util.Random
     // Seed it with random doubles and blobs
@@ -197,7 +198,7 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
         .timeSeries(newTable)
     val columns = List(doubleColumn)
 
-    series.create(1000, columns.asJava)
+    series.create(defaultShardSize, columns.asJava)
 
     val dataSet =
       doubleCollection.asScala.map(DoubleRDD.fromJava).toList
@@ -226,7 +227,7 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
         .timeSeries(newTable)
     val columns = List(doubleColumn)
 
-    series.create(1000, columns.asJava)
+    series.create(defaultShardSize, columns.asJava)
 
     sqlContext
       .qdbDoubleColumn(qdbUri, table, doubleColumn.getName, doubleRanges)
@@ -251,7 +252,7 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
         .timeSeries(newTable)
     val columns = List(doubleColumn)
 
-    series.create(1000, columns.asJava)
+    series.create(defaultShardSize, columns.asJava)
 
     sqlContext
       .qdbDoubleColumnAsDataFrame(qdbUri, table, doubleColumn.getName, doubleRanges)
@@ -364,7 +365,7 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
         .timeSeries(newTable)
     val columns = List(blobColumn)
 
-    series.create(1000, columns.asJava)
+    series.create(defaultShardSize, columns.asJava)
 
     sqlContext
       .qdbBlobColumn(qdbUri, table, blobColumn.getName, blobRanges)
@@ -393,7 +394,7 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
         .timeSeries(newTable)
     val columns = List(blobColumn)
 
-    series.create(1000, columns.asJava)
+    series.create(defaultShardSize, columns.asJava)
 
     sqlContext
       .qdbBlobColumnAsDataFrame(qdbUri, table, blobColumn.getName, blobRanges)
