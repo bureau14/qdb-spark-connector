@@ -4,10 +4,12 @@ import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets.UTF_8
 import java.util.Arrays
 import java.sql.Timestamp
-import java.time.{Instant, LocalDateTime}
+import java.time.{Instant, LocalDateTime, LocalTime, Duration}
 
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{SQLContext, Row, SaveMode}
 import org.apache.spark.{SparkContext, SparkException}
+import org.apache.spark.sql.types._
 
 import org.scalatest.{BeforeAndAfterAll, FunSuite}
 import org.scalatest.Matchers._
@@ -35,8 +37,11 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
       "SoHHpH26NtZvfq5pqm/8BXKbVIkf+yYiVZ5fQbq1nbcI=",
       "Pb+d1o3HuFtxEb5uTl9peU89ze9BZTK9f8KdKr4k7zGA="))
 
-  private var qdbUri: String = "qdb://127.0.0.1:" + qdbPort
-  private var sqlContext: SQLContext = _
+  private val qdbUri: String = "qdb://127.0.0.1:" + qdbPort
+  private val sparkContext: SparkContext = new SparkContext("local[2]", "QdbTimeSeriesSuite")
+  private val sqlContext: SQLContext = new SQLContext(sparkContext)
+  import sqlContext.implicits._
+
   private var table: String = _
 
   private var doubleColumn: QdbColumnDefinition = _
@@ -74,10 +79,7 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
   override protected def beforeAll(): Unit = {
     super.beforeAll()
 
-
     qdbProc = launchQdb
-
-    sqlContext = new SQLContext(new SparkContext("local[2]", "QdbTimeSeriesSuite"))
 
     // Create a timeseries table with random id
     table = java.util.UUID.randomUUID.toString
@@ -187,7 +189,7 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
       .collect()
 
     results.length should equal(1)
-    results.head.getLong(0) should equal(doubleCollection.size())
+    results.head.getLong(4) should equal(doubleCollection.size())
   }
 
   test("double data can be written in parallel as an RDD") {
@@ -413,4 +415,83 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
       results should contain(expected)
       }
   }
+
+  test("can do complex aggregations using DataFrame") {
+
+    val points = (0 to 59).map { p => LocalDateTime.of(2017, 11, 23, 3, p) }
+    val sensors = List(java.util.UUID.randomUUID.toString, java.util.UUID.randomUUID.toString)
+    val columns : List[QdbColumnDefinition] =
+      List("temperature", "pressure").map { c => new QdbColumnDefinition.Double(c) }.toList
+
+    // Ensure timeseries are created for each of our sensors
+    sensors.foreach { s =>
+      Util.createCluster(qdbUri)
+        .timeSeries(s)
+        .create(defaultShardSize, columns.asJava) }
+
+    val r = scala.util.Random
+
+    // Seed our timeseries sensors with random double data for each of the timepoints
+    for (s <- sensors; c <- columns) {
+      val doubleCollection = new QdbDoubleColumnCollection(c.getName)
+      doubleCollection.addAll(
+        points
+          .map { new QdbTimespec(_) }
+          .map { new QdbDoubleColumnValue(_, r.nextDouble)}
+          .toList
+          .asJava)
+
+      Util.createCluster(qdbUri)
+        .timeSeries(s)
+        .insertDoubles(doubleCollection)
+    }
+
+    // Now send aggregate requests per sensor, per column, per 5 minutes.
+    // In order to do that, we first generate a List[Row] so that we can
+    // create a dataframe out of that.
+    val aggregatePoints =
+      (0 to 59 by 5).map { p => LocalDateTime.of(2017, 11, 23, 3, p) }
+    for (s <- sensors; c <- columns) {
+      val aggregates : List[AggregateQuery] =
+        aggregatePoints.map({ p =>
+          AggregateQuery(
+            begin = Timestamp.valueOf(p),
+            end = Timestamp.valueOf(p.plusMinutes(5)),
+            operation = QdbAggregation.Type.COUNT)}).toList
+
+      val df = sqlContext
+        .qdbAggregateDoubleColumnAsDataFrame(
+          qdbUri,
+          s,
+          c.getName,
+          aggregates)
+
+      df.show()
+    }
+
+
+
+
+
+
+    //val rdd = sparkContext.makeRDD(rows)
+    //val schema =
+    //StructType(
+    //StructField("sensor", StringType, false) ::
+    //StructField("column", StringType, false) ::
+    //StructField("timestamp", TimestampType, false) :: Nil)
+
+    //val df =
+    //sqlContext
+    //.createDataFrame(rdd, schema)
+    //val df2 = df.map { row =>
+    //val c = new SQLContext(new SparkContext("local[2]", "QdbTimeSeriesSuite-2"))
+    //c.isCached("foo")
+    //}
+
+
+    //df2.show()
+
+  }
+
 }
