@@ -20,6 +20,7 @@ import net.quasardb.spark.partitioner._
 case class DoubleAggregation(
   table: String,
   column: String,
+  aggreggationType: String,
   begin: Timestamp,
   end: Timestamp,
   count: Long,
@@ -65,12 +66,13 @@ class DoubleAggregateRDD(
       StructType(
         StructField("table", StringType, true) ::
         StructField("column", StringType, true) ::
+        StructField("aggregationType", StringType, true) ::
         StructField("begin", TimestampType, true) ::
         StructField("end", TimestampType, true) ::
         StructField("count", LongType, true) ::
         StructField("result", DoubleType, true) :: Nil)
 
-    sqlContext.createDataFrame(map(DoubleAggregateRDD.toRow), struct(Set("table", "column", "begin", "end", "count", "result")))
+    sqlContext.createDataFrame(map(DoubleAggregateRDD.toRow), struct(Set("table", "column", "aggregationType", "begin", "end", "count", "result")))
   }
 }
 
@@ -79,6 +81,7 @@ object DoubleAggregateRDD {
     DoubleAggregation(
       table,
       column,
+      row.getType.toString,
       row.getRange.getBegin.asTimestamp,
       row.getRange.getEnd.asTimestamp,
       row.getCount,
@@ -89,6 +92,7 @@ object DoubleAggregateRDD {
     Row(
       row.table,
       row.column,
+      row.aggreggationType,
       row.begin,
       row.end,
       row.count,
