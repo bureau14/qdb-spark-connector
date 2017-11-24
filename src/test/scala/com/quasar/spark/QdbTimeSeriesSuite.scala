@@ -6,10 +6,12 @@ import java.util.Arrays
 import java.sql.Timestamp
 import java.time.{Instant, LocalDateTime, LocalTime, Duration}
 
+import org.apache.spark.sql.catalyst.encoders.RowEncoder
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{SQLContext, Row, SaveMode}
 import org.apache.spark.{SparkContext, SparkException}
 import org.apache.spark.sql.types._
+import org.apache.spark.sql.functions._
 
 import org.scalatest.{BeforeAndAfterAll, FunSuite}
 import org.scalatest.Matchers._
@@ -451,23 +453,67 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
     // create a dataframe out of that.
     val aggregatePoints =
       (0 to 59 by 5).map { p => LocalDateTime.of(2017, 11, 23, 3, p) }
-    for (s <- sensors; c <- columns) {
-      val aggregates : List[AggregateQuery] =
-        aggregatePoints.map({ p =>
-          AggregateQuery(
-            begin = Timestamp.valueOf(p),
-            end = Timestamp.valueOf(p.plusMinutes(5)),
-            operation = QdbAggregation.Type.COUNT)}).toList
 
-      val df = sqlContext
-        .qdbAggregateDoubleColumnAsDataFrame(
-          qdbUri,
-          s,
-          c.getName,
-          aggregates)
 
-      df.show()
-    }
+    val inputDataFrames =
+      for (s <- sensors; c <- columns)
+        yield sqlContext
+          .qdbAggregateDoubleColumnAsDataFrame(
+            qdbUri,
+            s,
+            c.getName,
+            aggregatePoints.map({ p =>
+              AggregateQuery(
+                begin = Timestamp.valueOf(p),
+                end = Timestamp.valueOf(p.plusMinutes(5)),
+                operation = QdbAggregation.Type.SUM)}).toList)
+
+    val outputSchema =
+      StructType(
+        StructField("time series", StringType, true) ::
+          StructField("start time", TimestampType, true) ::
+          StructField("end time", TimestampType, true) ::
+          StructField("temperature", DoubleType, true) ::
+          StructField("pressure", DoubleType, true) :: Nil)
+
+    val outputEncoder = RowEncoder(outputSchema)
+
+    val zipper = udf[Seq[(String, Double)], Seq[String], Seq[Double]](_.zip(_))
+
+    val df = inputDataFrames
+      .reduceLeft((lhs, rhs) => lhs.unionAll(rhs))
+      .groupBy("table", "begin", "end")
+      .agg(collect_list(col("column")) as "columns",
+        collect_list(col("result")) as "values")
+      .withColumn("results", zipper(col("columns"), col("values"))).drop("columns", "values")
+      .select(
+        col("table").as[String],
+        col("begin").as[Timestamp],
+        col("end").as[Timestamp],
+        col("results").as[Seq[(String, Double)]])
+      .map {
+        case (table : String, begin : Timestamp, end : Timestamp, results : Seq[(String, Double)]) =>
+          val lookup = Map(
+            "time series" -> table,
+            "start time" -> begin,
+            "end time" -> end) ++ results.toMap
+
+          Row.fromSeq(
+            outputSchema.map { x =>
+              lookup.getOrElse(x.name, null)
+            })
+      } (outputEncoder)
+
+      // .map { x =>
+      //   val sensor = x.getAs[String]("table")
+      //   val column = x.getAs[String]("column")
+      //   val begin = x.getAs[Timestamp]("begin")
+      //   val end = x.getAs[Timestamp]("end")
+      //   val result = x.getAs[Double]("result")
+
+      //   sensor
+      // }
+    df.show(false)
 
 
 
