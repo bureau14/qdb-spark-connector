@@ -191,7 +191,7 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
       .collect()
 
     results.length should equal(1)
-    results.head.getLong(4) should equal(doubleCollection.size())
+    results.head.getLong(5) should equal(doubleCollection.size())
   }
 
   test("double data can be written in parallel as an RDD") {
@@ -423,7 +423,8 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
     val points = (0 to 59).map { p => LocalDateTime.of(2017, 11, 23, 3, p) }
     val sensors = List(java.util.UUID.randomUUID.toString, java.util.UUID.randomUUID.toString)
     val columns : List[QdbColumnDefinition] =
-      List("temperature", "pressure").map { c => new QdbColumnDefinition.Double(c) }.toList
+      List("temperature", "pressure", "volume", "weight", "colour").map { c => new QdbColumnDefinition.Double(c) }.toList
+    val aggregations = List(QdbAggregation.Type.SUM, QdbAggregation.Type.ARITHMETIC_MEAN)
 
     // Ensure timeseries are created for each of our sensors
     sensors.foreach { s =>
@@ -454,7 +455,8 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
     val aggregatePoints =
       (0 to 59 by 5).map { p => LocalDateTime.of(2017, 11, 23, 3, p) }
 
-
+    // Now we can generate all our input dataframes which will be querying
+    // quasardb.
     val inputDataFrames =
       for (s <- sensors; c <- columns)
         yield sqlContext
@@ -462,82 +464,76 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
             qdbUri,
             s,
             c.getName,
-            aggregatePoints.map({ p =>
+            (for (p <- aggregatePoints; a <- aggregations) yield {
               AggregateQuery(
                 begin = Timestamp.valueOf(p),
                 end = Timestamp.valueOf(p.plusMinutes(5)),
-                operation = QdbAggregation.Type.SUM)}).toList)
+                operation = a)}).toList)
 
+    // Before we can start actually processing our dataframes, let's define
+    // our output schema which we will be coercing the last row to. This so
+    // that Spark actually knows the labels and which types to expect.
+    val defaultFields : List[StructField] =
+      List(StructField("time series", StringType, true),
+        StructField("start time", TimestampType, true),
+        StructField("end time", TimestampType, true))
+    val columnFields : List[StructField] =
+      // Note that that we are hardcoding the format of the column here, which
+      // is used in the lookup table in the Spark job.
+      (for (c <- columns; a <- aggregations) yield {
+          StructField(c.getName + " (" + a.toString + ")", DoubleType, true)
+        }).toList
     val outputSchema =
-      StructType(
-        StructField("time series", StringType, true) ::
-          StructField("start time", TimestampType, true) ::
-          StructField("end time", TimestampType, true) ::
-          StructField("temperature", DoubleType, true) ::
-          StructField("pressure", DoubleType, true) :: Nil)
-
+      StructType(defaultFields ::: columnFields)
     val outputEncoder = RowEncoder(outputSchema)
 
-    val zipper = udf[Seq[(String, Double)], Seq[String], Seq[Double]](_.zip(_))
+    // Utility functon that is able to coerce 3 columns with aggregationtype, column id and value
+    // into a single column with a zipped list.
+    val zipper = udf[Seq[(String, String, Double)], Seq[String], Seq[String], Seq[Double]]((_, _, _).zipped.toList)
 
     val df = inputDataFrames
+    // First step is to union all our dataframes into a single, big dataframe
       .reduceLeft((lhs, rhs) => lhs.unionAll(rhs))
-      .groupBy("table", "begin", "end")
-      .agg(collect_list(col("column")) as "columns",
+
+    // Collect all relevant aggregate outputs per table (= sensor), per timespan
+    .groupBy("table", "begin", "end")
+
+    // Aggregate aggregation types, column id and the aggregation result into a
+    // single column 'results'.
+      .agg(collect_list(col("aggregationType")) as "aggregationTypes",
+        collect_list(col("column")) as "columns",
         collect_list(col("result")) as "values")
-      .withColumn("results", zipper(col("columns"), col("values"))).drop("columns", "values")
+        .withColumn("results", zipper(col("aggregationTypes"),col("columns"), col("values"))).drop("columns", "values", "aggregationTypes")
+
+    // We only care about just a few columns, so let's get rid of all the noise data
       .select(
         col("table").as[String],
         col("begin").as[Timestamp],
         col("end").as[Timestamp],
-        col("results").as[Seq[(String, Double)]])
+        col("results").as[Seq[(String, String, Double)]])
       .map {
-        case (table : String, begin : Timestamp, end : Timestamp, results : Seq[(String, Double)]) =>
-          val lookup = Map(
+        case (table : String, begin : Timestamp, end : Timestamp, results : Seq[(String, String, Double)]) =>
+
+          // Create a lookup map of column id -> value, so that we can
+          // easily construct a single row from a sequence.
+          val lookup = (Map(
             "time series" -> table,
             "start time" -> begin,
-            "end time" -> end) ++ results.toMap
+            "end time" -> end)
+            ++
+            // Here we hardcode the column name again, which is first defined in the
+            // outputSchema's columnFields above.
+            (results.map { case (x, y, z) => (y + " (" + x + ")", z) }.toMap))
 
+          // Now all that's left is to simply look up each of our schema's columns
+          // in our lookup table, or return null if it's not found.
           Row.fromSeq(
             outputSchema.map { x =>
               lookup.getOrElse(x.name, null)
             })
       } (outputEncoder)
+      .sort(col("time series"), col("start time"))
 
-      // .map { x =>
-      //   val sensor = x.getAs[String]("table")
-      //   val column = x.getAs[String]("column")
-      //   val begin = x.getAs[Timestamp]("begin")
-      //   val end = x.getAs[Timestamp]("end")
-      //   val result = x.getAs[Double]("result")
-
-      //   sensor
-      // }
     df.show(false)
-
-
-
-
-
-
-    //val rdd = sparkContext.makeRDD(rows)
-    //val schema =
-    //StructType(
-    //StructField("sensor", StringType, false) ::
-    //StructField("column", StringType, false) ::
-    //StructField("timestamp", TimestampType, false) :: Nil)
-
-    //val df =
-    //sqlContext
-    //.createDataFrame(rdd, schema)
-    //val df2 = df.map { row =>
-    //val c = new SQLContext(new SparkContext("local[2]", "QdbTimeSeriesSuite-2"))
-    //c.isCached("foo")
-    //}
-
-
-    //df2.show()
-
   }
-
 }
