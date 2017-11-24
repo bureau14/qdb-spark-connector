@@ -420,10 +420,12 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
 
   test("can do complex aggregations using DataFrame") {
 
-    val points = (0 to 59).map { p => LocalDateTime.of(2017, 11, 23, 3, p) }
+    val startTime = LocalDateTime.of(2017,11,23,3,0)
+    val points = (0 to 719).map { p => startTime.plusMinutes(p) }
     val sensors = List(java.util.UUID.randomUUID.toString, java.util.UUID.randomUUID.toString)
     val columns : List[QdbColumnDefinition] =
-      List("temperature", "pressure", "volume", "weight", "colour").map { c => new QdbColumnDefinition.Double(c) }.toList
+      List("temperature", "pressure", "volume", "weight", "colour",
+        "latitude", "longitude", "altitude", "velocity").map { c => new QdbColumnDefinition.Double(c) }.toList
     val aggregations = List(QdbAggregation.Type.SUM, QdbAggregation.Type.ARITHMETIC_MEAN)
 
     // Ensure timeseries are created for each of our sensors
@@ -442,6 +444,7 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
           .map { new QdbTimespec(_) }
           .map { new QdbDoubleColumnValue(_, r.nextDouble)}
           .toList
+          .filter(_ => r.nextBoolean) // randomly filter 50% of the data points
           .asJava)
 
       Util.createCluster(qdbUri)
@@ -453,7 +456,7 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
     // In order to do that, we first generate a List[Row] so that we can
     // create a dataframe out of that.
     val aggregatePoints =
-      (0 to 59 by 5).map { p => LocalDateTime.of(2017, 11, 23, 3, p) }
+      (0 to 719 by 5).map { p => startTime.plusMinutes(p) }
 
     // Now we can generate all our input dataframes which will be querying
     // quasardb.
