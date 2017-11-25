@@ -8,14 +8,14 @@ import org.apache.spark.sql.{DataFrame, SQLContext}
 import net.quasardb.spark.rdd._
 import net.quasardb.spark.rdd.ts._
 
-import net.quasardb.qdb._
+import net.quasardb.qdb.{QdbSession, QdbTimeRangeCollection, QdbTimeSeriesRow};
 
 package object spark {
 
   implicit class QdbContext(@transient val sqlContext : SQLContext) {
     def tagAsDataFrame(
       uri: String,
-      tag: String)(implicit securityOptions : Option[QdbCluster.SecurityOptions]) = {
+      tag: String)(implicit securityOptions : Option[QdbSession.SecurityOptions]) = {
       new QdbTagRDD(sqlContext.sparkContext, uri, tag)
     }
 
@@ -23,15 +23,22 @@ package object spark {
       uri: String,
       table: String,
       column: String,
-      ranges: QdbTimeRangeCollection)(implicit securityOptions : Option[QdbCluster.SecurityOptions]) = {
+      ranges: QdbTimeRangeCollection)(implicit securityOptions : Option[QdbSession.SecurityOptions]) = {
       new DoubleRDD(sqlContext.sparkContext, uri, table, column, ranges)
+    }
+
+    def qdbTable(
+      uri: String,
+      table: String,
+      ranges: QdbTimeRangeCollection)(implicit securityOptions : Option[QdbSession.SecurityOptions]) = {
+      new TableRDD(sqlContext.sparkContext, uri, table, ranges)
     }
 
     def qdbAggregateDoubleColumn(
       uri: String,
       table: String,
       column: String,
-      input: Seq[AggregateQuery])(implicit securityOptions : Option[QdbCluster.SecurityOptions])= {
+      input: Seq[AggregateQuery])(implicit securityOptions : Option[QdbSession.SecurityOptions])= {
       new DoubleAggregateRDD(sqlContext.sparkContext, uri, table, column, input)
     }
 
@@ -39,7 +46,7 @@ package object spark {
       uri: String,
       table: String,
       column: String,
-      input: Seq[AggregateQuery])(implicit securityOptions : Option[QdbCluster.SecurityOptions])= {
+      input: Seq[AggregateQuery])(implicit securityOptions : Option[QdbSession.SecurityOptions])= {
       qdbAggregateDoubleColumn(uri, table, column, input)
         .toDataFrame(sqlContext)
     }
@@ -48,7 +55,7 @@ package object spark {
       uri: String,
       table: String,
       column: String,
-      ranges: QdbTimeRangeCollection)(implicit securityOptions : Option[QdbCluster.SecurityOptions]) = {
+      ranges: QdbTimeRangeCollection)(implicit securityOptions : Option[QdbSession.SecurityOptions]) = {
       qdbDoubleColumn(uri, table, column, ranges)
         .toDataFrame(sqlContext)
     }
@@ -57,7 +64,7 @@ package object spark {
       uri: String,
       table: String,
       column: String,
-      ranges: QdbTimeRangeCollection)(implicit securityOptions : Option[QdbCluster.SecurityOptions]) = {
+      ranges: QdbTimeRangeCollection)(implicit securityOptions : Option[QdbSession.SecurityOptions]) = {
       new BlobRDD(sqlContext.sparkContext, uri, table, column, ranges)
     }
 
@@ -65,7 +72,7 @@ package object spark {
       uri: String,
       table: String,
       column: String,
-      input: Seq[AggregateQuery])(implicit securityOptions : Option[QdbCluster.SecurityOptions]) = {
+      input: Seq[AggregateQuery])(implicit securityOptions : Option[QdbSession.SecurityOptions]) = {
       new BlobAggregateRDD(sqlContext.sparkContext, uri, table, column, input)
     }
 
@@ -73,7 +80,7 @@ package object spark {
       uri: String,
       table: String,
       column: String,
-      input: Seq[AggregateQuery])(implicit securityOptions : Option[QdbCluster.SecurityOptions]) = {
+      input: Seq[AggregateQuery])(implicit securityOptions : Option[QdbSession.SecurityOptions]) = {
       qdbAggregateBlobColumn(uri, table, column, input)
         .toDataFrame(sqlContext)
     }
@@ -82,7 +89,7 @@ package object spark {
       uri: String,
       table: String,
       column: String,
-      ranges: QdbTimeRangeCollection)(implicit securityOptions : Option[QdbCluster.SecurityOptions]) = {
+      ranges: QdbTimeRangeCollection)(implicit securityOptions : Option[QdbSession.SecurityOptions]) = {
       qdbBlobColumn(uri, table, column, ranges)
         .toDataFrame(sqlContext)
     }
@@ -91,6 +98,11 @@ package object spark {
   implicit def toQdbDoubleRDDFunctions[A <: (Timestamp, Double)](
     rdd: RDD[A]): DoubleRDDFunctions[A] = {
     return new DoubleRDDFunctions[A](rdd)
+  }
+
+  implicit def toQdbTableRDDFunctions[A <: QdbTimeSeriesRow](
+    rdd: RDD[A]): TableRDDFunctions[A] = {
+    return new TableRDDFunctions[A](rdd)
   }
 
   implicit def toQdbDoubleDataFrameFunctions(

@@ -34,8 +34,8 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
   private var qdbProc: Process = _
   private var defaultShardSize: Long = 1000 * 60 * 60 * 24 // 24 hours
 
-  implicit val securityOptions : Option[QdbCluster.SecurityOptions] =
-    Some(new QdbCluster.SecurityOptions("qdb-api-python",
+  implicit val securityOptions : Option[QdbSession.SecurityOptions] =
+    Some(new QdbSession.SecurityOptions("qdb-api-python",
       "SoHHpH26NtZvfq5pqm/8BXKbVIkf+yYiVZ5fQbq1nbcI=",
       "Pb+d1o3HuFtxEb5uTl9peU89ze9BZTK9f8KdKr4k7zGA="))
 
@@ -418,6 +418,20 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
       }
   }
 
+  /**
+    * Table tests
+    */
+  test("table data with simple blobs can be written in parallel as an RDD") {
+    // Define a new table with only the double column as definition
+    val newTable = java.util.UUID.randomUUID.toString
+    val series : QdbTimeSeries =
+      Util.createCluster(qdbUri)
+        .timeSeries(newTable)
+  }
+
+  /**
+    * Complex queries / benchmark / stresstest etc.
+    */
   test("can do complex aggregations using DataFrame") {
 
     val startTime = LocalDateTime.of(2017,11,23,3,0)

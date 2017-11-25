@@ -18,7 +18,7 @@ class BlobRDD(
   val uri: String,
   val table: String,
   val column: String,
-  val ranges: QdbTimeRangeCollection)(implicit securityOptions : Option[QdbCluster.SecurityOptions])
+  val ranges: QdbTimeRangeCollection)(implicit securityOptions : Option[QdbSession.SecurityOptions])
     extends RDD[(Timestamp, Array[Byte])](sc, Nil) {
 
   override protected def getPartitions = QdbPartitioner.computePartitions(uri)

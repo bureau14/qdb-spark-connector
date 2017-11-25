@@ -11,7 +11,7 @@ import net.quasardb.qdb._
 import net.quasardb.spark.rdd.Util
 import net.quasardb.spark.partitioner._
 
-class QdbIntegerRDD(prev: RDD[String])(implicit securityOptions : Option[QdbCluster.SecurityOptions])
+class QdbIntegerRDD(prev: RDD[String])(implicit securityOptions : Option[QdbSession.SecurityOptions])
     extends RDD[(String, Long)](prev) {
 
   override protected def getPartitions = prev.partitions

@@ -18,16 +18,23 @@ import retry.Success
 object Util {
 
   def createCluster(uri: String)
-    (implicit securityOptions : Option[QdbCluster.SecurityOptions]) : QdbCluster = securityOptions match {
+    (implicit securityOptions : Option[QdbSession.SecurityOptions]) : QdbCluster = securityOptions match {
     case Some(securityOptions) => new QdbCluster(uri, securityOptions)
     case None => new QdbCluster(uri)
+  }
+
+  def appendRows(
+    uri: String,
+    table: String,
+    values: Iterator[QdbTimeSeriesRow])(implicit securityOptions : Option[QdbSession.SecurityOptions]): Unit = {
+
   }
 
   def insertDoubles(
     uri: String,
     table: String,
     column: String,
-    values: Iterator[(Timestamp, Double)])(implicit securityOptions : Option[QdbCluster.SecurityOptions]): Unit = {
+    values: Iterator[(Timestamp, Double)])(implicit securityOptions : Option[QdbSession.SecurityOptions]): Unit = {
 
     var collection = new QdbDoubleColumnCollection(column)
     collection.addAll(values.map(DoubleRDD.toJava).toList)
@@ -58,7 +65,7 @@ object Util {
     uri: String,
     table: String,
     column: String,
-    values: Iterator[(Timestamp, Array[Byte])])(implicit securityOption : Option[QdbCluster.SecurityOptions]): Unit = {
+    values: Iterator[(Timestamp, Array[Byte])])(implicit securityOption : Option[QdbSession.SecurityOptions]): Unit = {
 
     var collection = new QdbBlobColumnCollection(column)
     collection.addAll(values.map(BlobRDD.toJava).toList)

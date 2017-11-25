@@ -12,7 +12,7 @@ class BlobDataFrameFunctions(data: DataFrame) extends Serializable {
   def toQdbBlobColumn(
     uri: String,
     table: String,
-    column: String)(implicit securityOptions : Option[QdbCluster.SecurityOptions]) : Unit = {
+    column: String)(implicit securityOptions : Option[QdbSession.SecurityOptions]) : Unit = {
 
     data
       .rdd

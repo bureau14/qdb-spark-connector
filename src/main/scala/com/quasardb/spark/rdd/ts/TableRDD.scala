@@ -17,38 +17,25 @@ import scala.reflect.ClassTag
 import net.quasardb.spark.partitioner._
 import net.quasardb.spark.rdd.Util
 
-class DoubleRDD(
+class TableRDD(
   sc: SparkContext,
   val uri: String,
   val table: String,
-  val column: String,
   val ranges: QdbTimeRangeCollection)(implicit securityOptions : Option[QdbSession.SecurityOptions])
-    extends RDD[(Timestamp, Double)](sc, Nil) {
+    extends RDD[QdbTimeSeriesRow](sc, Nil) {
 
   override protected def getPartitions = QdbPartitioner.computePartitions(uri)
 
   override def compute(
     split: Partition,
-    context: TaskContext): Iterator[(Timestamp, Double)] = {
-    val partition: QdbPartition = split.asInstanceOf[QdbPartition]
-
-    val series: QdbTimeSeries = Util.createCluster(partition.uri).timeSeries(table)
-
-    // TODO: limit query to only the Partition
-    series.getDoubles(column, ranges).toList.map(DoubleRDD.fromJava).iterator
-  }
-
-  def toDataFrame(sqlContext: SQLContext): DataFrame = {
-    val struct =
-      StructType(
-        StructField("timestamp", TimestampType, false) ::
-        StructField("value", DoubleType, false) :: Nil)
-
-    sqlContext.createDataFrame(map(DoubleRDD.toRow), struct(Set("timestamp", "value")))
+    context: TaskContext): Iterator[QdbTimeSeriesRow] = {
+    // Not implemented yet
+    val emptyList : List[QdbTimeSeriesRow] = List()
+    emptyList.iterator
   }
 }
 
-object DoubleRDD {
+object TableRDD {
   def fromJava(row:QdbDoubleColumnValue):(Timestamp, Double) = {
     (row.getTimestamp.asTimestamp, row.getValue)
   }

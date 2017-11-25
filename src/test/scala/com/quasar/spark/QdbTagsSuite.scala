@@ -20,7 +20,7 @@ class QdbTagsSuite extends FunSuite with BeforeAndAfterAll {
   private val qdbPort: Int = 2838
   private var qdbProc: Process = _
   private var qdbUri: String = "qdb://127.0.0.1:" + qdbPort
-  implicit val securityOptions : Option[QdbCluster.SecurityOptions] = None
+  implicit val securityOptions : Option[QdbSession.SecurityOptions] = None
 
   private var sqlContext: SQLContext = _
   private val key1: String = java.util.UUID.randomUUID.toString

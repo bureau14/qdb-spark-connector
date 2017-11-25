@@ -11,7 +11,7 @@ class BlobRDDFunctions[A <: (Timestamp, Array[Byte])](data: RDD[A]) extends Seri
   def toQdbBlobColumn(
     uri: String,
     table: String,
-    column: String)(implicit securityOptions : Option[QdbCluster.SecurityOptions]) : Unit = {
+    column: String)(implicit securityOptions : Option[QdbSession.SecurityOptions]) : Unit = {
 
     data.foreachPartition { partition => Util.insertBlobs(uri, table, column, partition) }
   }

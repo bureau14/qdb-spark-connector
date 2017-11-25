@@ -32,7 +32,7 @@ class DoubleAggregateRDD(
   val uri: String,
   val table: String,
   val column: String,
-  val input: Seq[AggregateQuery])(implicit securityOptions : Option[QdbCluster.SecurityOptions])
+  val input: Seq[AggregateQuery])(implicit securityOptions : Option[QdbSession.SecurityOptions])
     extends RDD[DoubleAggregation](sc, Nil) {
 
   override protected def getPartitions = QdbPartitioner.computePartitions(uri)

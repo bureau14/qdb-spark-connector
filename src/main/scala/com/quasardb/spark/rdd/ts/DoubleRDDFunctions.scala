@@ -11,7 +11,7 @@ class DoubleRDDFunctions[A <: (Timestamp, Double)](data: RDD[A]) extends Seriali
   def toQdbDoubleColumn(
     uri: String,
     table: String,
-    column: String)(implicit securityOptions : Option[QdbCluster.SecurityOptions]) : Unit = {
+    column: String)(implicit securityOptions : Option[QdbSession.SecurityOptions]) : Unit = {
 
     data.foreachPartition { partition => Util.insertDoubles(uri, table, column, partition) }
   }

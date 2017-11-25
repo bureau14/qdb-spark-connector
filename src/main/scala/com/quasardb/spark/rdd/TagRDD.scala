@@ -6,14 +6,13 @@ import org.apache.spark._
 
 import net.quasardb.qdb._
 
-
 import net.quasardb.spark.partitioner._
 import net.quasardb.spark.rdd.Util
 
 class QdbTagRDD(
   sc: SparkContext,
   val uri: String,
-  val tag: String)(implicit securityOptions : Option[QdbCluster.SecurityOptions])
+  val tag: String)(implicit securityOptions : Option[QdbSession.SecurityOptions])
     extends RDD[String](sc, Nil) {
 
   override protected def getPartitions = QdbPartitioner.computePartitions(uri)
