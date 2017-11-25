@@ -537,6 +537,8 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
       } (outputEncoder)
       .sort(col("time series"), col("start time"))
 
-    df.show(false)
+    val results = df.collect()
+    results.length should equal(aggregatePoints.length * sensors.length)
+
   }
 }
