@@ -539,6 +539,9 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
 
     val results = df.collect()
     results.length should equal(aggregatePoints.length * sensors.length)
-
+    results.foreach { row : Row =>
+      sensors should contain(row.getAs[String]("time series"))
+      aggregatePoints should contain(row.getAs[Timestamp]("start time").toLocalDateTime)
+    }
   }
 }
