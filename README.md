@@ -203,17 +203,51 @@ val df = sqlContext
     "dbl_value",
     timeRanges)
   .toQdbDoubleColumn(qdbUri, "doubles_test_copy", "dbl_value")
-  ```
+```
+
+# Bulk inserts using tables
+
+QuasarDB allows for high-performance bulk inserting, which allows you to insert multiple columns and rows in a single query. It uses a local table cache that is flushed after each partition has been processed through Spark.
+
+## Bulk inserts using an RDDs
+
+The `TableRDD` can be used to write data into QuasarDB using bulk inserts. The following code demonstrates how to insert a table with two double columns in a single operation:
+
+```scala
+import java.sql.Timestamp
+import org.apache.spark.SparkContext
+import org.apache.spark.sql.SQLContext
+import net.quasardb.spark._
+
+val qdbUri = "qdb://127.0.01:2836"    
+val sc = new SparkContext("local", "qdb-test")
+val sqlContext = new SQLContext(sc)
+
+val dataSet = List(
+  new QdbTimeSeriesRow(Timestamp.valueOf("2017-10-01 12:09:03"), Array(1.2345678, 8.7654321)),
+  new QdbTimeSeriesRow(Timestamp.valueOf("2017-10-01 12:04:03"), Array(5.6789012, 2.1098765)))
+
+sc
+  .parallelize(dataSet)
+  .toQdbTable(qdbUri, myTable)
+```
 
 # Tests
 
-In order to run the tests, please download the latest quasardb-server, JNI jars and Java API jars, and extract in a `qdb` subdirectory like this:
+In order to run the tests, please download the latest quasardb-server and extract in a `qdb` subdirectory like this:
 
 ```
 mkdir qdb
 cd qdb
 wget https:////download.quasardb.net/quasardb/2.1/2.1.0-beta.1/server/qdb-2.1.0master-darwin-64bit-server.tar.gz
 tar -xzf qdb-2.1.0master-darwin-64bit-server.tar.gz
+```
+
+Then download the JNI jars and Java API jars and store them in a `lib` subdirect as follows:
+
+```
+mkdir lib
+cd lib
 wget https://maven.quasardb.net/net/quasardb/jni/2.1.0-SNAPSHOT/jni-2.1.0-VERSION-ARCHITECTURE-x64.jar
 wget https://maven.quasardb.net/net/quasardb/qdb/2.1.0-SNAPSHOT/qdb-2.1.0-VERSION.jar
 ```
