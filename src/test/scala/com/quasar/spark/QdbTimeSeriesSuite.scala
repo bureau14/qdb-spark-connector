@@ -455,13 +455,26 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
     val doubleResults = sqlContext
       .qdbDoubleColumn(qdbUri, newTable, doubleColumn.getName, doubleRanges)
       .collect()
+    val blobResults = sqlContext
+      .qdbBlobColumn(qdbUri, newTable, blobColumn.getName, blobRanges)
+      .collect()
+      .map(hashBlobResult)
 
     doubleResults.length should equal(dataSet.length)
+    blobResults.length should equal(dataSet.length)
 
     doubleCollection
       .asScala
       .foreach { d =>
         doubleResults should contain(DoubleRDD.fromJava(d))
+      }
+
+    blobCollection
+      .asScala
+      .map(BlobRDD.fromJava)
+      .map(hashBlobResult)
+      .foreach { expected =>
+        blobResults should contain(expected)
       }
   }
 
