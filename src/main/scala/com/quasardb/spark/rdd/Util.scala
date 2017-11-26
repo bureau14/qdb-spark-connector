@@ -10,6 +10,7 @@ import odelay.Timer
 
 import net.quasardb.qdb._
 
+import net.quasardb.spark.connection.QdbConnection
 import net.quasardb.spark.rdd.ts.{DoubleRDD, BlobRDD}
 
 import retry._
@@ -27,7 +28,23 @@ object Util {
     uri: String,
     table: String,
     values: Iterator[QdbTimeSeriesRow])(implicit securityOptions : Option[QdbSession.SecurityOptions]): Unit = {
+    implicit val success = Success[Boolean](_ == true)
+    implicit val timer = odelay.Timer.default
 
+    val (begin, copy) = values.duplicate
+
+    try {
+      val localTable : QdbTimeSeriesTable =
+        new QdbConnection().cluster(uri).timeSeries(table).table()
+
+      copy.foreach { localTable.append(_) }
+      localTable.flush
+    } catch {
+
+      // Thrown in case of race condition
+      case e: QdbOperationException =>
+        appendRows(uri, table, begin)
+    }
   }
 
   def insertDoubles(

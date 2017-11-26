@@ -54,6 +54,8 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
   private var blobCollection: QdbBlobColumnCollection = _
   private var blobRanges: QdbTimeRangeCollection = new QdbTimeRangeCollection
 
+  private var testTable : Seq[QdbTimeSeriesRow] = _
+
   private def randomData(): ByteBuffer = {
     val str = java.util.UUID.randomUUID.toString
     var buf = ByteBuffer.allocateDirect(str.length)
@@ -96,13 +98,26 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
     series.create(defaultShardSize, columns.asJava)
 
     val r = scala.util.Random
-    // Seed it with random doubles and blobs
 
+    // Seed it with random doubles and blobs
     doubleCollection = new QdbDoubleColumnCollection(doubleColumn.getName())
     blobCollection = new QdbBlobColumnCollection(blobColumn.getName())
 
     doubleCollection.addAll(Seq.fill(100)(new QdbDoubleColumnValue(r.nextDouble)).toList.asJava)
-    blobCollection.addAll(Seq.fill(100)(new QdbBlobColumnValue(randomData())).toList.asJava)
+    blobCollection.addAll(doubleCollection.asScala.map { d =>
+      // This mapping ensures that the blob timestamps are exactly the same as
+      // the double timestamps. This helps in building up the table data as well,
+      // since then each stamp will have both double and blob data.
+      new QdbBlobColumnValue(d.getTimestamp, randomData()) }.toList.asJava)
+
+    // Seed our test table with both
+    testTable = doubleCollection
+      .asScala
+      .zip(blobCollection.asScala)
+      .map { case (d : QdbDoubleColumnValue, b : QdbBlobColumnValue) =>
+        new QdbTimeSeriesRow(d.getTimestamp, Array(
+          QdbTimeSeriesValue.createDouble(d.getValue),
+          QdbTimeSeriesValue.createBlob(b.getValue))) }
 
     series.insertDoubles(doubleCollection)
     series.insertBlobs(blobCollection)
@@ -119,7 +134,6 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
       new QdbTimeRange(
         blobRange.getBegin,
         new QdbTimespec(blobRange.getEnd.asLocalDateTime.plusNanos(1))))
-
   }
 
   override protected def afterAll(): Unit = {
@@ -216,7 +230,6 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
     val results = sqlContext
       .qdbDoubleColumn(qdbUri, newTable, doubleColumn.getName, doubleRanges)
       .collect()
-
 
     for (expected <- doubleCollection.asScala) {
       results should contain(DoubleRDD.fromJava(expected))
@@ -427,6 +440,29 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
     val series : QdbTimeSeries =
       Util.createCluster(qdbUri)
         .timeSeries(newTable)
+
+    val columns = List(doubleColumn, blobColumn)
+    series.create(defaultShardSize, columns.asJava)
+
+    val dataSet = testTable
+
+    sqlContext
+      .sparkContext
+      .parallelize(dataSet)
+      .toQdbTable(qdbUri, newTable)
+
+    // Retrieve our test data
+    val doubleResults = sqlContext
+      .qdbDoubleColumn(qdbUri, newTable, doubleColumn.getName, doubleRanges)
+      .collect()
+
+    doubleResults.length should equal(dataSet.length)
+
+    doubleCollection
+      .asScala
+      .foreach { d =>
+        doubleResults should contain(DoubleRDD.fromJava(d))
+      }
   }
 
   /**
