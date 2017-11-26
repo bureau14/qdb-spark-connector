@@ -11,7 +11,7 @@ import odelay.Timer
 import net.quasardb.qdb._
 
 import net.quasardb.spark.connection.QdbConnection
-import net.quasardb.spark.rdd.ts.{DoubleRDD, BlobRDD}
+import net.quasardb.spark.rdd.{DoubleRDD, BlobRDD}
 
 import retry._
 import retry.Success

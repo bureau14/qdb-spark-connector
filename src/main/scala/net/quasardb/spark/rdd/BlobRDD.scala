@@ -1,4 +1,4 @@
-package net.quasardb.spark.rdd.ts
+package net.quasardb.spark.rdd
 
 import java.nio.ByteBuffer
 import java.sql.Timestamp

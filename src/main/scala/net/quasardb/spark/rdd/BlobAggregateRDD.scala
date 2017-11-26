@@ -1,4 +1,4 @@
-package net.quasardb.spark.rdd.ts
+package net.quasardb.spark.rdd
 
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{SQLContext, Row, DataFrame}
@@ -17,36 +17,31 @@ import scala.reflect.ClassTag
 import net.quasardb.spark.rdd.{AggregateQuery, Util}
 import net.quasardb.spark.partitioner._
 
-case class DoubleAggregation(
-  table: String,
-  column: String,
-  aggreggationType: String,
-  begin: Timestamp,
-  end: Timestamp,
+case class BlobAggregation(
   count: Long,
-  result: Double
+  result: Array[Byte]
 ) extends Serializable
 
-class DoubleAggregateRDD(
+class BlobAggregateRDD(
   sc: SparkContext,
   val uri: String,
   val table: String,
   val column: String,
   val input: Seq[AggregateQuery])(implicit securityOptions : Option[QdbSession.SecurityOptions])
-    extends RDD[DoubleAggregation](sc, Nil) {
+    extends RDD[BlobAggregation](sc, Nil) {
 
   override protected def getPartitions = QdbPartitioner.computePartitions(uri)
 
   override def compute(
     split: Partition,
-    context: TaskContext): Iterator[DoubleAggregation] = {
+    context: TaskContext): Iterator[BlobAggregation] = {
 
-    val aggregate = new QdbDoubleAggregationCollection()
+    val aggregate = new QdbBlobAggregationCollection()
 
     input.foreach {
       _ match {
         case AggregateQuery(begin, end, operation) => aggregate.add(
-          new QdbDoubleAggregation(
+          new QdbBlobAggregation(
             operation,
             new QdbTimeRange(
               new QdbTimespec(begin),
@@ -58,43 +53,33 @@ class DoubleAggregateRDD(
     val series: QdbTimeSeries = Util.createCluster(partition.uri).timeSeries(table)
 
     // TODO: limit query to only the Partition
-    series.doubleAggregate(column, aggregate).toList.map(DoubleAggregateRDD.fromJava(table, column)).iterator
+    series.blobAggregate(column, aggregate).toList.map(BlobAggregateRDD.fromJava).iterator
   }
 
   def toDataFrame(sqlContext: SQLContext): DataFrame = {
     val struct =
       StructType(
-        StructField("table", StringType, true) ::
-        StructField("column", StringType, true) ::
-        StructField("aggregationType", StringType, true) ::
-        StructField("begin", TimestampType, true) ::
-        StructField("end", TimestampType, true) ::
         StructField("count", LongType, true) ::
-        StructField("result", DoubleType, true) :: Nil)
+        StructField("result", BinaryType, true) :: Nil)
 
-    sqlContext.createDataFrame(map(DoubleAggregateRDD.toRow), struct(Set("table", "column", "aggregationType", "begin", "end", "count", "result")))
+    sqlContext.createDataFrame(map(BlobAggregateRDD.toRow), struct(Set("count", "result")))
   }
 }
 
-object DoubleAggregateRDD {
-  def fromJava(table:String, column:String)(row:QdbDoubleAggregation):DoubleAggregation = {
-    DoubleAggregation(
-      table,
-      column,
-      row.getType.toString,
-      row.getRange.getBegin.asTimestamp,
-      row.getRange.getEnd.asTimestamp,
+object BlobAggregateRDD {
+  def fromJava(row:QdbBlobAggregation):BlobAggregation = {
+    val buf : ByteBuffer = row.getResult.getValue
+    var arr : Array[Byte] = new Array[Byte](buf.remaining)
+    buf.get(arr)
+    buf.rewind
+
+    BlobAggregation(
       row.getCount,
-      row.getResult.getValue)
+      arr)
   }
 
-  def toRow(row : DoubleAggregation): Row = {
+  def toRow(row:BlobAggregation): Row = {
     Row(
-      row.table,
-      row.column,
-      row.aggreggationType,
-      row.begin,
-      row.end,
       row.count,
       row.result)
   }

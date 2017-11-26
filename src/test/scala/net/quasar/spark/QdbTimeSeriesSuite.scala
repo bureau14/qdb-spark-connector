@@ -20,7 +20,6 @@ import net.quasardb.qdb._;
 
 import net.quasardb.spark._
 import net.quasardb.spark.rdd._
-import net.quasardb.spark.rdd.ts.{DoubleRDD, DoubleRDDFunctions, BlobRDD}
 
 import scala.language.implicitConversions
 import scala.collection.JavaConverters._

@@ -5,8 +5,8 @@ import java.sql.Timestamp
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, SQLContext}
 
+import net.quasardb.spark.df._
 import net.quasardb.spark.rdd._
-import net.quasardb.spark.rdd.ts._
 
 import net.quasardb.qdb.{QdbSession, QdbTimeRangeCollection, QdbTimeSeriesRow};
 

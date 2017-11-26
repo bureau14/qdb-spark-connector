@@ -1,11 +1,11 @@
-package net.quasardb.spark.rdd.ts
+package net.quasardb.spark.df
 
 import java.sql.Timestamp
 import org.apache.spark.sql.DataFrame
 
 import net.quasardb.qdb._
 import net.quasardb.spark.rdd.Util
-import net.quasardb.spark.rdd.ts.DoubleRDD
+import net.quasardb.spark.rdd.DoubleRDD
 
 class DoubleDataFrameFunctions(data: DataFrame) extends Serializable {
 
