@@ -433,7 +433,7 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
   /**
     * Table tests
     */
-  test("table data with simple blobs can be written in parallel as an RDD") {
+  test("table data with doubles and blobs can be written in parallel as a DataFrame") {
     // Define a new table with only the double column as definition
     val newTable = java.util.UUID.randomUUID.toString
     val series : QdbTimeSeries =
@@ -445,10 +445,19 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
 
     val dataSet = testTable
 
-    sqlContext
+    val schema = StructType(
+      StructField("timestamp", TimestampType, true) ::
+        StructField("column1", DoubleType, true) ::
+        StructField("column2", BinaryType, true) :: Nil)
+
+    val rdd : RDD[QdbTimeSeriesRow] = sqlContext
       .sparkContext
       .parallelize(dataSet)
+
+    val df = sqlContext
+      .createDataFrame(rdd.map(TableRDD.toRow), schema)
       .toQdbTable(qdbUri, newTable)
+
 
     // Retrieve our test data
     val doubleResults = sqlContext

@@ -95,14 +95,19 @@ package object spark {
     }
   }
 
-  implicit def toQdbDoubleRDDFunctions[A <: (Timestamp, Double)](
-    rdd: RDD[A]): DoubleRDDFunctions[A] = {
-    return new DoubleRDDFunctions[A](rdd)
-  }
-
   implicit def toQdbTableRDDFunctions[A <: QdbTimeSeriesRow](
     rdd: RDD[A]): TableRDDFunctions[A] = {
     return new TableRDDFunctions[A](rdd)
+  }
+
+  implicit def toQdbTableDataFrameFunctions(
+    data: DataFrame): TableDataFrameFunctions = {
+    return new TableDataFrameFunctions(data)
+  }
+
+  implicit def toQdbDoubleRDDFunctions[A <: (Timestamp, Double)](
+    rdd: RDD[A]): DoubleRDDFunctions[A] = {
+    return new DoubleRDDFunctions[A](rdd)
   }
 
   implicit def toQdbDoubleDataFrameFunctions(

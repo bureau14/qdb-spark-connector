@@ -1,8 +1,9 @@
 package net.quasardb.spark.rdd
 
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{SQLContext, Row, DataFrame}
+import org.apache.spark.sql.{SQLContext, Row, RowFactory, DataFrame}
 import org.apache.spark.sql.types._
+import org.apache.spark.sql._
 import org.apache.spark._
 
 import java.nio.ByteBuffer
@@ -33,22 +34,19 @@ class TableRDD(
     val emptyList : List[QdbTimeSeriesRow] = List()
     emptyList.iterator
   }
+
+  def toDataFrame(sqlContext: SQLContext): DataFrame = {
+    val struct =
+      StructType(
+        StructField("timestamp", TimestampType, false) ::
+        StructField("value", DoubleType, false) :: Nil)
+
+    sqlContext.createDataFrame(map(TableRDD.toRow), struct(Set("timestamp", "value")))
+  }
 }
 
 object TableRDD {
-  def fromJava(row:QdbDoubleColumnValue):(Timestamp, Double) = {
-    (row.getTimestamp.asTimestamp, row.getValue)
-  }
-
   def toJava(row:(Timestamp, Double)):QdbDoubleColumnValue = {
     new QdbDoubleColumnValue(row._1, row._2)
-  }
-
-  def fromRow(row:Row):(Timestamp, Double) = {
-    (row.getTimestamp(0), row.getDouble(1))
-  }
-
-  def toRow(row:(Timestamp, Double)): Row = {
-    Row(row._1, row._2)
   }
 }
