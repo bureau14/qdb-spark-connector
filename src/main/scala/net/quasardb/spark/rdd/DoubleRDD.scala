@@ -14,6 +14,7 @@ import net.quasardb.qdb._
 import scala.collection.JavaConversions._
 import scala.reflect.ClassTag
 
+import net.quasardb.spark.df.DoubleDataFrameFunctions
 import net.quasardb.spark.partitioner._
 import net.quasardb.spark.rdd.Util
 
@@ -44,7 +45,7 @@ class DoubleRDD(
         StructField("timestamp", TimestampType, false) ::
         StructField("value", DoubleType, false) :: Nil)
 
-    sqlContext.createDataFrame(map(DoubleRDD.toRow), struct(Set("timestamp", "value")))
+    sqlContext.createDataFrame(map(DoubleDataFrameFunctions.toRow), struct(Set("timestamp", "value")))
   }
 }
 
@@ -55,13 +56,5 @@ object DoubleRDD {
 
   def toJava(row:(Timestamp, Double)):QdbDoubleColumnValue = {
     new QdbDoubleColumnValue(row._1, row._2)
-  }
-
-  def fromRow(row:Row):(Timestamp, Double) = {
-    (row.getTimestamp(0), row.getDouble(1))
-  }
-
-  def toRow(row:(Timestamp, Double)): Row = {
-    Row(row._1, row._2)
   }
 }

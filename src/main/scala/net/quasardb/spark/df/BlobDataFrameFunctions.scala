@@ -1,7 +1,7 @@
 package net.quasardb.spark.df
 
 import java.sql.Timestamp
-import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.{SQLContext, Row, DataFrame}
 
 import net.quasardb.qdb._
 import net.quasardb.spark.rdd.Util
@@ -16,7 +16,18 @@ class BlobDataFrameFunctions(data: DataFrame) extends Serializable {
 
     data
       .rdd
-      .map(BlobRDD.fromRow)
+      .map(BlobDataFrameFunctions.fromRow)
       .foreachPartition { partition => Util.insertBlobs(uri, table, column, partition) }
+  }
+}
+
+
+object BlobDataFrameFunctions {
+  def fromRow(row:Row):(Timestamp, Array[Byte]) = {
+    (row.getTimestamp(0), row.getAs[Array[Byte]](1))
+  }
+
+  def toRow(row:(Timestamp, Array[Byte])): Row = {
+    Row(row._1, row._2)
   }
 }

@@ -11,6 +11,7 @@ import org.apache.spark._
 
 import net.quasardb.qdb._
 import net.quasardb.spark.partitioner._
+import net.quasardb.spark.df.BlobDataFrameFunctions
 import net.quasardb.spark.rdd.Util
 
 class BlobRDD(
@@ -40,7 +41,7 @@ class BlobRDD(
         StructField("timestamp", TimestampType, false) ::
         StructField("value", BinaryType, false) :: Nil)
 
-    sqlContext.createDataFrame(map(BlobRDD.toRow), struct(Set("timestamp", "value")))
+    sqlContext.createDataFrame(map(BlobDataFrameFunctions.toRow), struct(Set("timestamp", "value")))
   }
 }
 
@@ -60,13 +61,5 @@ object BlobRDD {
     buf.rewind()
 
     new QdbBlobColumnValue(row._1, buf)
-  }
-
-  def fromRow(row:Row):(Timestamp, Array[Byte]) = {
-    (row.getTimestamp(0), row.getAs[Array[Byte]](1))
-  }
-
-  def toRow(row:(Timestamp, Array[Byte])): Row = {
-    Row(row._1, row._2)
   }
 }

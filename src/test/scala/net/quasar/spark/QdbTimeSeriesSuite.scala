@@ -170,7 +170,7 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
       .collect()
 
     for (expected <- doubleCollection.asScala) {
-      results should contain(DoubleRDD.toRow(DoubleRDD.fromJava(expected)))
+      results should contain(DoubleDataFrameFunctions.toRow(DoubleRDD.fromJava(expected)))
     }
   }
 
@@ -283,7 +283,7 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
     doubleCollection
       .asScala
       .map(DoubleRDD.fromJava)
-      .map(DoubleRDD.toRow)
+      .map(DoubleDataFrameFunctions.toRow)
       .foreach { expected =>
       results should contain(expected)
       }
@@ -333,7 +333,7 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
     blobCollection
       .asScala
       .map(BlobRDD.fromJava)
-      .map(BlobRDD.toRow)
+      .map(BlobDataFrameFunctions.toRow)
       .map(hashBlobResult)
       .foreach { expected =>
         results should contain(expected)
@@ -425,7 +425,7 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
     blobCollection
       .asScala
       .map(BlobRDD.fromJava)
-      .map(BlobRDD.toRow)
+      .map(BlobDataFrameFunctions.toRow)
       .foreach { expected =>
       results should contain(expected)
       }
