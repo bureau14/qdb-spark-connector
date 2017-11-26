@@ -19,6 +19,7 @@ import org.scalatest.Matchers._
 import net.quasardb.qdb._;
 
 import net.quasardb.spark._
+import net.quasardb.spark.df._
 import net.quasardb.spark.rdd._
 
 import scala.language.implicitConversions
@@ -455,7 +456,7 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
       .parallelize(dataSet)
 
     val df = sqlContext
-      .createDataFrame(rdd.map(TableRDD.toRow), schema)
+      .createDataFrame(rdd.map(TableDataFrameFunctions.toRow), schema)
       .toQdbTable(qdbUri, newTable)
 
 

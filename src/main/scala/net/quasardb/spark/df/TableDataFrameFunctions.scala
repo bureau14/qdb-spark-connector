@@ -1,7 +1,11 @@
 package net.quasardb.spark.df
 
+import java.nio.ByteBuffer
 import java.sql.Timestamp
-import org.apache.spark.sql.DataFrame
+
+import org.apache.spark.sql.{SQLContext, Row, DataFrame}
+import org.apache.spark.sql.types._
+import org.apache.spark.sql._
 
 import net.quasardb.qdb._
 import net.quasardb.spark.rdd.Util
@@ -15,10 +19,12 @@ class TableDataFrameFunctions(data: DataFrame) extends Serializable {
 
     data
       .rdd
-      .map(TableRDD.fromRow)
+      .map(TableDataFrameFunctions.fromRow)
       .foreachPartition { partition => Util.appendRows(uri, table, partition) }
   }
+}
 
+object TableDataFrameFunctions {
   def byteBufferToByteArray(buf : ByteBuffer) : Array[Byte] = {
     var arr : Array[Byte] = new Array[Byte](buf.remaining)
     buf.get(arr)

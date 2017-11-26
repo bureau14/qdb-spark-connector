@@ -1,12 +1,11 @@
 package net.quasardb.spark.rdd
 
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{SQLContext, Row, RowFactory, DataFrame}
+import org.apache.spark.sql.{SQLContext, DataFrame}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql._
 import org.apache.spark._
 
-import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets.UTF_8
 import java.sql.Timestamp
 
@@ -16,7 +15,7 @@ import scala.collection.JavaConversions._
 import scala.reflect.ClassTag
 
 import net.quasardb.spark.partitioner._
-import net.quasardb.spark.rdd.Util
+import net.quasardb.spark.df.TableDataFrameFunctions
 
 class TableRDD(
   sc: SparkContext,
@@ -41,12 +40,6 @@ class TableRDD(
         StructField("timestamp", TimestampType, false) ::
         StructField("value", DoubleType, false) :: Nil)
 
-    sqlContext.createDataFrame(map(TableRDD.toRow), struct(Set("timestamp", "value")))
-  }
-}
-
-object TableRDD {
-  def toJava(row:(Timestamp, Double)):QdbDoubleColumnValue = {
-    new QdbDoubleColumnValue(row._1, row._2)
+    sqlContext.createDataFrame(map(TableDataFrameFunctions.toRow), struct(Set("timestamp", "value")))
   }
 }
