@@ -179,7 +179,7 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
       .qdbAggregateDoubleColumn(
         qdbUri,
         table,
-        doubleColumn.getName,
+        List(doubleColumn.getName),
         List(
           AggregateQuery(
             begin = doubleCollection.range().getBegin().asTimestamp(),
@@ -196,7 +196,7 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
       .qdbAggregateDoubleColumnAsDataFrame(
         qdbUri,
         table,
-        doubleColumn.getName,
+        List(doubleColumn.getName),
         List(
           AggregateQuery(
             begin = doubleCollection.range().getBegin().asTimestamp(),
@@ -494,10 +494,11 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
 
     val startTime = LocalDateTime.of(2017,11,23,3,0)
     val points = (0 to 719).map { p => startTime.plusMinutes(p) }
-    val sensors = List(java.util.UUID.randomUUID.toString, java.util.UUID.randomUUID.toString)
+    val sensors = List.fill(10)(java.util.UUID.randomUUID.toString)
     val columns : List[QdbColumnDefinition] =
-      List("temperature", "pressure", "volume", "weight", "colour",
-        "latitude", "longitude", "altitude", "velocity").map { c => new QdbColumnDefinition.Double(c) }.toList
+      List.fill(500)(java.util.UUID.randomUUID.toString)
+        .map { c => new QdbColumnDefinition.Double(c) }
+        .toList
     val aggregations = List(QdbAggregation.Type.SUM, QdbAggregation.Type.ARITHMETIC_MEAN)
 
     // Ensure timeseries are created for each of our sensors
@@ -533,12 +534,12 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
     // Now we can generate all our input dataframes which will be querying
     // quasardb.
     val inputDataFrames =
-      for (s <- sensors; c <- columns)
+      for (s <- sensors)
         yield sqlContext
           .qdbAggregateDoubleColumnAsDataFrame(
             qdbUri,
             s,
-            c.getName,
+            columns.map { _.getName },
             (for (p <- aggregatePoints; a <- aggregations) yield {
               AggregateQuery(
                 begin = Timestamp.valueOf(p),
@@ -609,11 +610,14 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
       } (outputEncoder)
       .sort(col("time series"), col("start time"))
 
+    //df.show()
     val results = df.collect()
+
     results.length should equal(aggregatePoints.length * sensors.length)
     results.foreach { row : Row =>
-      sensors should contain(row.getAs[String]("time series"))
-      aggregatePoints should contain(row.getAs[Timestamp]("start time").toLocalDateTime)
+    sensors should contain(row.getAs[String]("time series"))
+    aggregatePoints should contain(row.getAs[Timestamp]("start time").toLocalDateTime)
     }
+
   }
 }

@@ -31,7 +31,7 @@ class DoubleAggregateRDD(
   sc: SparkContext,
   val uri: String,
   val table: String,
-  val column: String,
+  val columns: Seq[String],
   val input: Seq[AggregateQuery])(implicit securityOptions : Option[QdbSession.SecurityOptions])
     extends RDD[DoubleAggregation](sc, Nil) {
 
@@ -58,7 +58,14 @@ class DoubleAggregateRDD(
     val series: QdbTimeSeries = Util.createCluster(partition.uri).timeSeries(table)
 
     // TODO: limit query to only the Partition
-    series.doubleAggregate(column, aggregate).toList.map(DoubleAggregateRDD.fromJava(table, column)).iterator
+
+    columns.map { column =>
+      series
+        .doubleAggregate(column, aggregate)
+        .toList
+        .map(DoubleAggregateRDD.fromJava(table, column)) }
+      .flatten
+      .iterator
   }
 
   def toDataFrame(sqlContext: SQLContext): DataFrame = {

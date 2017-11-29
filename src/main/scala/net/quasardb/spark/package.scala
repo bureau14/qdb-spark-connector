@@ -37,17 +37,17 @@ package object spark {
     def qdbAggregateDoubleColumn(
       uri: String,
       table: String,
-      column: String,
+      columns: Seq[String],
       input: Seq[AggregateQuery])(implicit securityOptions : Option[QdbSession.SecurityOptions])= {
-      new DoubleAggregateRDD(sqlContext.sparkContext, uri, table, column, input)
+      new DoubleAggregateRDD(sqlContext.sparkContext, uri, table, columns, input)
     }
 
     def qdbAggregateDoubleColumnAsDataFrame(
       uri: String,
       table: String,
-      column: String,
+      columns: Seq[String],
       input: Seq[AggregateQuery])(implicit securityOptions : Option[QdbSession.SecurityOptions])= {
-      qdbAggregateDoubleColumn(uri, table, column, input)
+      qdbAggregateDoubleColumn(uri, table, columns, input)
         .toDataFrame(sqlContext)
     }
 
