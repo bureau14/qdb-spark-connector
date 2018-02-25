@@ -12,7 +12,7 @@ class DoubleDataFrameFunctions(data: DataFrame) extends Serializable {
   def toQdbDoubleColumn(
     uri: String,
     table: String,
-    column: String)(implicit securityOptions : Option[QdbSession.SecurityOptions]) : Unit = {
+    column: String)(implicit securityOptions : Option[Session.SecurityOptions]) : Unit = {
 
     data
       .rdd

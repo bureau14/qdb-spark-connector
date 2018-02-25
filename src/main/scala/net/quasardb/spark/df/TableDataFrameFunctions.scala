@@ -3,11 +3,12 @@ package net.quasardb.spark.df
 import java.nio.ByteBuffer
 import java.sql.Timestamp
 
-import org.apache.spark.sql.{SQLContext, Row, DataFrame}
+import org.apache.spark.sql.{SQLContext, Row => SparkRow, DataFrame}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql._
 
 import net.quasardb.qdb._
+import net.quasardb.qdb.ts.{Row => QdbRow, Value}
 import net.quasardb.spark.rdd.Util
 import net.quasardb.spark.rdd.TableRDD
 
@@ -15,7 +16,7 @@ class TableDataFrameFunctions(data: DataFrame) extends Serializable {
 
   def toQdbTable(
     uri: String,
-    table: String)(implicit securityOptions : Option[QdbSession.SecurityOptions]) : Unit = {
+    table: String)(implicit securityOptions : Option[Session.SecurityOptions]) : Unit = {
 
     data
       .rdd
@@ -33,22 +34,22 @@ object TableDataFrameFunctions {
     arr
   }
 
-  def toRow(row:QdbTimeSeriesRow): Row = {
-    val values : Array[Any] = row.getValues.map({ x : QdbTimeSeriesValue =>
+  def toRow(row:QdbRow): SparkRow = {
+    val values : Array[Any] = row.getValues.map({ x : Value =>
       x.getType match {
-        case QdbTimeSeriesValue.Type.DOUBLE => x.getDouble
-        case QdbTimeSeriesValue.Type.BLOB => byteBufferToByteArray(x.getBlob)
+        case Value.Type.DOUBLE => x.getDouble
+        case Value.Type.BLOB => byteBufferToByteArray(x.getBlob)
       }
     })
 
-    Row.fromSeq(Array(row.getTimestamp.asTimestamp) ++ values)
+    SparkRow.fromSeq(Array(row.getTimestamp.asTimestamp) ++ values)
   }
 
-  def fromRow(row:Row):QdbTimeSeriesRow = {
+  def fromRow(row:SparkRow):QdbRow = {
     println("converting row to qdb time series row: ", row.toString)
     val schema = row.schema
 
-    new QdbTimeSeriesRow(
+    new QdbRow(
       row.getTimestamp(0),
       schema
         .fields
@@ -56,11 +57,11 @@ object TableDataFrameFunctions {
         .tail
         .map {
           case (StructField(name, dataType : DoubleType, nullable, metadata), index : Int) =>
-            QdbTimeSeriesValue.createDouble(row.getAs[Double](index))
+            Value.createDouble(row.getAs[Double](index))
           case (StructField(name, dataType : BinaryType, nullable, metadata), index : Int) =>
             // Perhaps we do not need to create a safe blob here, but for the time
             // being let's be safe.
-            QdbTimeSeriesValue.createSafeBlob(row.getAs[Array[Byte]](index))
+            Value.createSafeBlob(row.getAs[Array[Byte]](index))
         }
 
     )

@@ -10,6 +10,7 @@ import java.nio.charset.StandardCharsets.UTF_8
 import java.sql.Timestamp
 
 import net.quasardb.qdb._
+import net.quasardb.qdb.ts.{TimeRange, Timespec}
 
 import scala.collection.JavaConversions._
 import scala.reflect.ClassTag
@@ -27,7 +28,7 @@ class BlobAggregateRDD(
   val uri: String,
   val table: String,
   val column: String,
-  val input: Seq[AggregateQuery])(implicit securityOptions : Option[QdbSession.SecurityOptions])
+  val input: Seq[AggregateQuery])(implicit securityOptions : Option[Session.SecurityOptions])
     extends RDD[BlobAggregation](sc, Nil) {
 
   override protected def getPartitions = QdbPartitioner.computePartitions(uri)
@@ -43,9 +44,9 @@ class BlobAggregateRDD(
         case AggregateQuery(begin, end, operation) => aggregate.add(
           new QdbBlobAggregation(
             operation,
-            new QdbTimeRange(
-              new QdbTimespec(begin),
-              new QdbTimespec(end))))
+            new TimeRange(
+              new Timespec(begin),
+              new Timespec(end))))
       }
     }
 

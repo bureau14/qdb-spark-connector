@@ -10,6 +10,8 @@ import org.apache.spark.sql.types._
 import org.apache.spark._
 
 import net.quasardb.qdb._
+import net.quasardb.qdb.ts.TimeRange
+
 import net.quasardb.spark.partitioner._
 import net.quasardb.spark.df.BlobDataFrameFunctions
 import net.quasardb.spark.rdd.Util
@@ -19,7 +21,7 @@ class BlobRDD(
   val uri: String,
   val table: String,
   val column: String,
-  val ranges: QdbTimeRangeCollection)(implicit securityOptions : Option[QdbSession.SecurityOptions])
+  val ranges: Array[TimeRange])(implicit securityOptions : Option[Session.SecurityOptions])
     extends RDD[(Timestamp, Array[Byte])](sc, Nil) {
 
   override protected def getPartitions = QdbPartitioner.computePartitions(uri)

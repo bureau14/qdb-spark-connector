@@ -10,6 +10,7 @@ import java.nio.charset.StandardCharsets.UTF_8
 import java.sql.Timestamp
 
 import net.quasardb.qdb._
+import net.quasardb.qdb.ts.TimeRange
 
 import scala.collection.JavaConversions._
 import scala.reflect.ClassTag
@@ -23,7 +24,7 @@ class DoubleRDD(
   val uri: String,
   val table: String,
   val column: String,
-  val ranges: QdbTimeRangeCollection)(implicit securityOptions : Option[QdbSession.SecurityOptions])
+  val ranges: Array[TimeRange])(implicit securityOptions : Option[Session.SecurityOptions])
     extends RDD[(Timestamp, Double)](sc, Nil) {
 
   override protected def getPartitions = QdbPartitioner.computePartitions(uri)

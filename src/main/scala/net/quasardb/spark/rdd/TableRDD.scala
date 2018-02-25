@@ -9,7 +9,8 @@ import org.apache.spark._
 import java.nio.charset.StandardCharsets.UTF_8
 import java.sql.Timestamp
 
-import net.quasardb.qdb._
+import net.quasardb.qdb.Session
+import net.quasardb.qdb.ts.{Row, TimeRange}
 
 import scala.collection.JavaConversions._
 import scala.reflect.ClassTag
@@ -21,16 +22,16 @@ class TableRDD(
   sc: SparkContext,
   val uri: String,
   val table: String,
-  val ranges: QdbTimeRangeCollection)(implicit securityOptions : Option[QdbSession.SecurityOptions])
-    extends RDD[QdbTimeSeriesRow](sc, Nil) {
+  val ranges: Array[TimeRange])(implicit securityOptions : Option[Session.SecurityOptions])
+    extends RDD[Row](sc, Nil) {
 
   override protected def getPartitions = QdbPartitioner.computePartitions(uri)
 
   override def compute(
     split: Partition,
-    context: TaskContext): Iterator[QdbTimeSeriesRow] = {
+    context: TaskContext): Iterator[Row] = {
     // Not implemented yet
-    val emptyList : List[QdbTimeSeriesRow] = List()
+    val emptyList : List[Row] = List()
     emptyList.iterator
   }
 

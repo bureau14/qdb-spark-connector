@@ -9,6 +9,8 @@ import scala.concurrent.{Await, Future}
 import odelay.Timer
 
 import net.quasardb.qdb._
+import net.quasardb.qdb.ts.{Table, Writer, Row}
+import net.quasardb.qdb.exception.OperationException
 
 import net.quasardb.spark.connection.QdbConnection
 import net.quasardb.spark.rdd.{DoubleRDD, BlobRDD}
@@ -19,30 +21,35 @@ import retry.Success
 object Util {
 
   def createCluster(uri: String)
-    (implicit securityOptions : Option[QdbSession.SecurityOptions]) : QdbCluster = securityOptions match {
+    (implicit securityOptions : Option[Session.SecurityOptions]) : QdbCluster = securityOptions match {
     case Some(securityOptions) => new QdbCluster(uri, securityOptions)
     case None => new QdbCluster(uri)
+  }
+
+  def createSession(uri: String)
+    (implicit securityOptions : Option[Session.SecurityOptions]) : Session = securityOptions match {
+    case Some(securityOptions) => Session.connect(uri)
+    case None => Session.connect(uri)
   }
 
   def appendRows(
     uri: String,
     table: String,
-    values: Iterator[QdbTimeSeriesRow])(implicit securityOptions : Option[QdbSession.SecurityOptions]): Unit = {
+    values: Iterator[Row])(implicit securityOptions : Option[Session.SecurityOptions]): Unit = {
     implicit val success = Success[Boolean](_ == true)
     implicit val timer = odelay.Timer.default
 
     val (begin, copy) = values.duplicate
 
     try {
-      val localTable : QdbTimeSeriesTable =
-        new QdbConnection().cluster(uri).timeSeries(table).table()
+      val writer : Writer =  Table.autoFlushWriter(createSession(uri), table)
 
-      copy.foreach { localTable.append(_) }
-      localTable.flush
+      copy.foreach { writer.append(_) }
+      writer.flush
     } catch {
 
       // Thrown in case of race condition
-      case e: QdbOperationException =>
+      case e: OperationException =>
         appendRows(uri, table, begin)
     }
   }
@@ -51,7 +58,7 @@ object Util {
     uri: String,
     table: String,
     column: String,
-    values: Iterator[(Timestamp, Double)])(implicit securityOptions : Option[QdbSession.SecurityOptions]): Unit = {
+    values: Iterator[(Timestamp, Double)])(implicit securityOptions : Option[Session.SecurityOptions]): Unit = {
 
     var collection = new QdbDoubleColumnCollection(column)
     collection.addAll(values.map(DoubleRDD.toJava).toList)
@@ -70,7 +77,7 @@ object Util {
       } catch {
 
         // Thrown in case of race condition
-        case e: QdbOperationException =>
+        case e: OperationException =>
           Future.failed(e)
       }
     }
@@ -82,7 +89,7 @@ object Util {
     uri: String,
     table: String,
     column: String,
-    values: Iterator[(Timestamp, Array[Byte])])(implicit securityOption : Option[QdbSession.SecurityOptions]): Unit = {
+    values: Iterator[(Timestamp, Array[Byte])])(implicit securityOption : Option[Session.SecurityOptions]): Unit = {
 
     var collection = new QdbBlobColumnCollection(column)
     collection.addAll(values.map(BlobRDD.toJava).toList)
@@ -101,7 +108,7 @@ object Util {
       } catch {
 
         // Thrown in case of race condition
-        case e: QdbOperationException =>
+        case e: OperationException =>
           Future.failed(e)
       }
     }

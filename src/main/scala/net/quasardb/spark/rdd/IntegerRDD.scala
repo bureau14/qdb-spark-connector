@@ -5,13 +5,13 @@ import scala.collection.JavaConversions._
 import org.apache.spark.rdd.RDD
 import org.apache.spark._
 
-import net.quasardb.qdb._
+import net.quasardb.qdb.Session
 
 
 import net.quasardb.spark.rdd.Util
 import net.quasardb.spark.partitioner._
 
-class QdbIntegerRDD(prev: RDD[String])(implicit securityOptions : Option[QdbSession.SecurityOptions])
+class QdbIntegerRDD(prev: RDD[String])(implicit securityOptions : Option[Session.SecurityOptions])
     extends RDD[(String, Long)](prev) {
 
   override protected def getPartitions = prev.partitions
