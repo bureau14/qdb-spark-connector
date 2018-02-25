@@ -42,7 +42,7 @@ timeRanges.add(
   new QdbTimeRange(
     Timestamp.valueOf("2017-10-01 12:09:03"),
     Timestamp.valueOf("2017-10-01 12:09:07")))
-    
+
 val sc = new SparkContext("local", "qdb-test")
 val sqlContext = new SQLContext(sc)
 
@@ -72,7 +72,7 @@ timeRanges.add(
   new QdbTimeRange(
     Timestamp.valueOf("2017-10-01 12:09:03"),
     Timestamp.valueOf("2017-10-01 12:09:07")))
-    
+
 val sc = new SparkContext("local", "qdb-test")
 val sqlContext = new SQLContext(sc)
 
@@ -110,7 +110,7 @@ val results = sqlContext
       AggregateQuery(
         begin = Timestamp.valueOf("2017-10-01 12:09:03"),
         end = = Timestamp.valueOf("2017-10-01 12:09:07"),
-        operation = QdbAggregation.Type.COUNT))        
+        operation = QdbAggregation.Type.COUNT))
   .collect
 
 results.length should equal(1)
@@ -142,7 +142,7 @@ val results = sqlContext
       AggregateQuery(
         begin = Timestamp.valueOf("2017-10-01 12:09:03"),
         end = = Timestamp.valueOf("2017-10-01 12:09:07"),
-        operation = QdbAggregation.Type.COUNT))        
+        operation = QdbAggregation.Type.COUNT))
   .collect
 
 results.length should equal(1)
@@ -159,7 +159,7 @@ import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
 import net.quasardb.spark._
 
-val qdbUri = "qdb://127.0.01:2836"    
+val qdbUri = "qdb://127.0.01:2836"
 val sc = new SparkContext("local", "qdb-test")
 val sqlContext = new SQLContext(sc)
 
@@ -192,7 +192,7 @@ timeRanges.add(
   new QdbTimeRange(
     Timestamp.valueOf("2017-10-01 12:09:03"),
     Timestamp.valueOf("2017-10-01 12:09:07")))
-    
+
 val sc = new SparkContext("local", "qdb-test")
 val sqlContext = new SQLContext(sc)
 
@@ -219,7 +219,7 @@ import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
 import net.quasardb.spark._
 
-val qdbUri = "qdb://127.0.01:2836"    
+val qdbUri = "qdb://127.0.01:2836"
 val sc = new SparkContext("local", "qdb-test")
 val sqlContext = new SQLContext(sc)
 
@@ -239,8 +239,8 @@ In order to run the tests, please download the latest quasardb-server and extrac
 ```
 mkdir qdb
 cd qdb
-wget https:////download.quasardb.net/quasardb/2.1/2.1.0-beta.1/server/qdb-2.1.0master-darwin-64bit-server.tar.gz
-tar -xzf qdb-2.1.0master-darwin-64bit-server.tar.gz
+wget https://download.quasardb.net/quasardb/2.1/2.1.1/server/qdb-2.1.1-darwin-64bit-server.tar.gz
+tar -xzf qdb-2.1.1-darwin-64bit-server.tar.gz
 ```
 
 Then download the JNI jars and Java API jars and store them in a `lib` subdirect as follows:
