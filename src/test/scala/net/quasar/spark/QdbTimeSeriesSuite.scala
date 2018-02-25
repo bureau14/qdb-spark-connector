@@ -434,193 +434,193 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
   /**
     * Table tests
     */
-  // test("table data with doubles and blobs can be written in parallel as a DataFrame") {
-  //   // Define a new table with only the double column as definition
-  //   val newTable = java.util.UUID.randomUUID.toString
-  //   val series : QdbTimeSeries =
-  //     Util.createCluster(qdbUri)
-  //       .timeSeries(newTable)
+  test("table data with doubles and blobs can be written in parallel as a DataFrame") {
+    // Define a new table with only the double column as definition
+    val newTable = java.util.UUID.randomUUID.toString
+    val series : QdbTimeSeries =
+      Util.createCluster(qdbUri)
+        .timeSeries(newTable)
 
-  //   val columns = Array(doubleColumn, blobColumn)
-  //   series.create(defaultShardSize, columns)
+    val columns = Array(doubleColumn, blobColumn)
+    series.create(defaultShardSize, columns)
 
-  //   val dataSet = testTable
+    val dataSet = testTable
 
-  //   val schema = StructType(
-  //     StructField("timestamp", TimestampType, true) ::
-  //       StructField("column1", DoubleType, true) ::
-  //       StructField("column2", BinaryType, true) :: Nil)
+    val schema = StructType(
+      StructField("timestamp", TimestampType, true) ::
+        StructField("column1", DoubleType, true) ::
+        StructField("column2", BinaryType, true) :: Nil)
 
-  //   val rdd : RDD[QdbRow] = sqlContext
-  //     .sparkContext
-  //     .parallelize(dataSet)
+    val rdd : RDD[QdbRow] = sqlContext
+      .sparkContext
+      .parallelize(dataSet)
 
-  //   val df = sqlContext
-  //     .createDataFrame(rdd.map(TableDataFrameFunctions.toRow), schema)
-  //     .toQdbTable(qdbUri, newTable)
+    val df = sqlContext
+      .createDataFrame(rdd.map(TableDataFrameFunctions.toRow), schema)
+      .toQdbTable(qdbUri, newTable)
 
 
-  //   // Retrieve our test data
-  //   val doubleResults = sqlContext
-  //     .qdbDoubleColumn(qdbUri, newTable, doubleColumn.getName, doubleRanges)
-  //     .collect()
-  //   val blobResults = sqlContext
-  //     .qdbBlobColumn(qdbUri, newTable, blobColumn.getName, blobRanges)
-  //     .collect()
-  //     .map(hashBlobResult)
+    // Retrieve our test data
+    val doubleResults = sqlContext
+      .qdbDoubleColumn(qdbUri, newTable, doubleColumn.getName, doubleRanges)
+      .collect()
+    val blobResults = sqlContext
+      .qdbBlobColumn(qdbUri, newTable, blobColumn.getName, blobRanges)
+      .collect()
+      .map(hashBlobResult)
 
-  //   doubleResults.length should equal(dataSet.length)
-  //   blobResults.length should equal(dataSet.length)
+    doubleResults.length should equal(dataSet.length)
+    blobResults.length should equal(dataSet.length)
 
-  //   doubleCollection
-  //     .asScala
-  //     .foreach { d =>
-  //       doubleResults should contain(DoubleRDD.fromJava(d))
-  //     }
+    doubleCollection
+      .asScala
+      .foreach { d =>
+        doubleResults should contain(DoubleRDD.fromJava(d))
+      }
 
-  //   blobCollection
-  //     .asScala
-  //     .map(BlobRDD.fromJava)
-  //     .map(hashBlobResult)
-  //     .foreach { expected =>
-  //       blobResults should contain(expected)
-  //     }
-  // }
+    blobCollection
+      .asScala
+      .map(BlobRDD.fromJava)
+      .map(hashBlobResult)
+      .foreach { expected =>
+        blobResults should contain(expected)
+      }
+  }
 
-  // /**
-  //   * Complex queries / benchmark / stresstest etc.
-  //   */
-  // test("can do complex aggregations using DataFrame") {
+  /**
+    * Complex queries / benchmark / stresstest etc.
+    */
+  test("can do complex aggregations using DataFrame") {
 
-  //   val startTime = LocalDateTime.of(2017,11,23,3,0)
-  //   val points = (0 to 719).map { p => startTime.plusMinutes(p) }
-  //   val sensors = List.fill(10)(java.util.UUID.randomUUID.toString)
-  //   val columns : Array[Column] =
-  //     List.fill(500)(java.util.UUID.randomUUID.toString)
-  //       .map { c => new Column.Double(c) }
-  //       .toArray
-  //   val aggregations = List(QdbAggregation.Type.SUM, QdbAggregation.Type.ARITHMETIC_MEAN)
+    val startTime = LocalDateTime.of(2017,11,23,3,0)
+    val points = (0 to 719).map { p => startTime.plusMinutes(p) }
+    val sensors = List.fill(10)(java.util.UUID.randomUUID.toString)
+    val columns : Array[Column] =
+      List.fill(500)(java.util.UUID.randomUUID.toString)
+        .map { c => new Column.Double(c) }
+        .toArray
+    val aggregations = List(QdbAggregation.Type.SUM, QdbAggregation.Type.ARITHMETIC_MEAN)
 
-  //   // Ensure timeseries are created for each of our sensors
-  //   sensors.foreach { s =>
-  //     Table.create(
-  //       Util.createSession(qdbUri),
-  //       s,
-  //       columns,
-  //       defaultShardSize) }
+    // Ensure timeseries are created for each of our sensors
+    sensors.foreach { s =>
+      Table.create(
+        Util.createSession(qdbUri),
+        s,
+        columns,
+        defaultShardSize) }
 
-  //   val r = scala.util.Random
+    val r = scala.util.Random
 
-  //   // Seed our timeseries sensors with random double data for each of the timepoints
-  //   for (s <- sensors; c <- columns) {
-  //     val doubleCollection = new QdbDoubleColumnCollection(c.getName)
-  //     doubleCollection.addAll(
-  //       points
-  //         .map { new Timespec(_) }
-  //         .map { new QdbDoubleColumnValue(_, r.nextDouble)}
-  //         .toList
-  //         .filter(_ => r.nextBoolean) // randomly filter 50% of the data points
-  //         .asJava)
+    // Seed our timeseries sensors with random double data for each of the timepoints
+    for (s <- sensors; c <- columns) {
+      val doubleCollection = new QdbDoubleColumnCollection(c.getName)
+      doubleCollection.addAll(
+        points
+          .map { new Timespec(_) }
+          .map { new QdbDoubleColumnValue(_, r.nextDouble)}
+          .toList
+          .filter(_ => r.nextBoolean) // randomly filter 50% of the data points
+          .asJava)
 
-  //     Util.createCluster(qdbUri)
-  //       .timeSeries(s)
-  //       .insertDoubles(doubleCollection)
-  //   }
+      Util.createCluster(qdbUri)
+        .timeSeries(s)
+        .insertDoubles(doubleCollection)
+    }
 
-  //   // Now send aggregate requests per sensor, per column, per 5 minutes.
-  //   // In order to do that, we first generate a List[Row] so that we can
-  //   // create a dataframe out of that.
-  //   val aggregatePoints =
-  //     (0 to 719 by 5).map { p => startTime.plusMinutes(p) }
+    // Now send aggregate requests per sensor, per column, per 5 minutes.
+    // In order to do that, we first generate a List[Row] so that we can
+    // create a dataframe out of that.
+    val aggregatePoints =
+      (0 to 719 by 5).map { p => startTime.plusMinutes(p) }
 
-  //   // Now we can generate all our input dataframes which will be querying
-  //   // quasardb.
-  //   val inputDataFrames =
-  //     for (s <- sensors)
-  //       yield sqlContext
-  //         .qdbAggregateDoubleColumnAsDataFrame(
-  //           qdbUri,
-  //           s,
-  //           columns.map { _.getName },
-  //           (for (p <- aggregatePoints; a <- aggregations) yield {
-  //             AggregateQuery(
-  //               begin = Timestamp.valueOf(p),
-  //               end = Timestamp.valueOf(p.plusMinutes(5)),
-  //               operation = a)}).toList)
+    // Now we can generate all our input dataframes which will be querying
+    // quasardb.
+    val inputDataFrames =
+      for (s <- sensors)
+        yield sqlContext
+          .qdbAggregateDoubleColumnAsDataFrame(
+            qdbUri,
+            s,
+            columns.map { _.getName },
+            (for (p <- aggregatePoints; a <- aggregations) yield {
+              AggregateQuery(
+                begin = Timestamp.valueOf(p),
+                end = Timestamp.valueOf(p.plusMinutes(5)),
+                operation = a)}).toList)
 
-  //   // Before we can start actually processing our dataframes, let's define
-  //   // our output schema which we will be coercing the last row to. This so
-  //   // that Spark actually knows the labels and which types to expect.
-  //   val defaultFields : List[StructField] =
-  //     List(StructField("time series", StringType, true),
-  //       StructField("start time", TimestampType, true),
-  //       StructField("end time", TimestampType, true))
-  //   val columnFields : List[StructField] =
-  //     // Note that that we are hardcoding the format of the column here, which
-  //     // is used in the lookup table in the Spark job.
-  //     (for (c <- columns; a <- aggregations) yield {
-  //         StructField(c.getName + " (" + a.toString + ")", DoubleType, true)
-  //       }).toList
-  //   val outputSchema =
-  //     StructType(defaultFields ::: columnFields)
-  //   val outputEncoder = RowEncoder(outputSchema)
+    // Before we can start actually processing our dataframes, let's define
+    // our output schema which we will be coercing the last row to. This so
+    // that Spark actually knows the labels and which types to expect.
+    val defaultFields : List[StructField] =
+      List(StructField("time series", StringType, true),
+        StructField("start time", TimestampType, true),
+        StructField("end time", TimestampType, true))
+    val columnFields : List[StructField] =
+      // Note that that we are hardcoding the format of the column here, which
+      // is used in the lookup table in the Spark job.
+      (for (c <- columns; a <- aggregations) yield {
+          StructField(c.getName + " (" + a.toString + ")", DoubleType, true)
+        }).toList
+    val outputSchema =
+      StructType(defaultFields ::: columnFields)
+    val outputEncoder = RowEncoder(outputSchema)
 
-  //   // Utility functon that is able to coerce 3 columns with aggregationtype, column id and value
-  //   // into a single column with a zipped list.
-  //   val zipper = udf[Seq[(String, String, Double)], Seq[String], Seq[String], Seq[Double]]((_, _, _).zipped.toList)
+    // Utility functon that is able to coerce 3 columns with aggregationtype, column id and value
+    // into a single column with a zipped list.
+    val zipper = udf[Seq[(String, String, Double)], Seq[String], Seq[String], Seq[Double]]((_, _, _).zipped.toList)
 
-  //   val df = inputDataFrames
-  //   // First step is to union all our dataframes into a single, big dataframe
-  //     .reduceLeft((lhs, rhs) => lhs.unionAll(rhs))
+    val df = inputDataFrames
+    // First step is to union all our dataframes into a single, big dataframe
+      .reduceLeft((lhs, rhs) => lhs.unionAll(rhs))
 
-  //   // Collect all relevant aggregate outputs per table (= sensor), per timespan
-  //   .groupBy("table", "begin", "end")
+    // Collect all relevant aggregate outputs per table (= sensor), per timespan
+    .groupBy("table", "begin", "end")
 
-  //   // Aggregate aggregation types, column id and the aggregation result into a
-  //   // single column 'results'.
-  //     .agg(collect_list(col("aggregationType")) as "aggregationTypes",
-  //       collect_list(col("column")) as "columns",
-  //       collect_list(col("result")) as "values")
-  //       .withColumn("results", zipper(col("aggregationTypes"),col("columns"), col("values"))).drop("columns", "values", "aggregationTypes")
+    // Aggregate aggregation types, column id and the aggregation result into a
+    // single column 'results'.
+      .agg(collect_list(col("aggregationType")) as "aggregationTypes",
+        collect_list(col("column")) as "columns",
+        collect_list(col("result")) as "values")
+        .withColumn("results", zipper(col("aggregationTypes"),col("columns"), col("values"))).drop("columns", "values", "aggregationTypes")
 
-  //   // We only care about just a few columns, so let's get rid of all the noise data
-  //     .select(
-  //       col("table").as[String],
-  //       col("begin").as[Timestamp],
-  //       col("end").as[Timestamp],
-  //       col("results").as[Seq[(String, String, Double)]])
-  //     .map {
-  //       case (table : String, begin : Timestamp, end : Timestamp, results : Seq[(String, String, Double)]) =>
+    // We only care about just a few columns, so let's get rid of all the noise data
+      .select(
+        col("table").as[String],
+        col("begin").as[Timestamp],
+        col("end").as[Timestamp],
+        col("results").as[Seq[(String, String, Double)]])
+      .map {
+        case (table : String, begin : Timestamp, end : Timestamp, results : Seq[(String, String, Double)]) =>
 
-  //         // Create a lookup map of column id -> value, so that we can
-  //         // easily construct a single row from a sequence.
-  //         val lookup = (Map(
-  //           "time series" -> table,
-  //           "start time" -> begin,
-  //           "end time" -> end)
-  //           ++
-  //           // Here we hardcode the column name again, which is first defined in the
-  //           // outputSchema's columnFields above.
-  //           (results.map { case (x, y, z) => (y + " (" + x + ")", z) }.toMap))
+          // Create a lookup map of column id -> value, so that we can
+          // easily construct a single row from a sequence.
+          val lookup = (Map(
+            "time series" -> table,
+            "start time" -> begin,
+            "end time" -> end)
+            ++
+            // Here we hardcode the column name again, which is first defined in the
+            // outputSchema's columnFields above.
+            (results.map { case (x, y, z) => (y + " (" + x + ")", z) }.toMap))
 
-  //         // Now all that's left is to simply look up each of our schema's columns
-  //         // in our lookup table, or return null if it's not found.
-  //         SparkRow.fromSeq(
-  //           outputSchema.map { x =>
-  //             lookup.getOrElse(x.name, null)
-  //           })
-  //     } (outputEncoder)
-  //     .sort(col("time series"), col("start time"))
+          // Now all that's left is to simply look up each of our schema's columns
+          // in our lookup table, or return null if it's not found.
+          SparkRow.fromSeq(
+            outputSchema.map { x =>
+              lookup.getOrElse(x.name, null)
+            })
+      } (outputEncoder)
+      .sort(col("time series"), col("start time"))
 
-  //   //df.show()
-  //   val results = df.collect()
+    //df.show()
+    val results = df.collect()
 
-  //   results.length should equal(aggregatePoints.length * sensors.length)
-  //   results.foreach { row : SparkRow =>
-  //   sensors should contain(row.getAs[String]("time series"))
-  //   aggregatePoints should contain(row.getAs[Timestamp]("start time").toLocalDateTime)
-  //   }
+    results.length should equal(aggregatePoints.length * sensors.length)
+    results.foreach { row : SparkRow =>
+    sensors should contain(row.getAs[String]("time series"))
+    aggregatePoints should contain(row.getAs[Timestamp]("start time").toLocalDateTime)
+    }
 
-  // }
+  }
 
 }
