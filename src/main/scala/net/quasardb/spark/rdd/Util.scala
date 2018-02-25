@@ -28,7 +28,7 @@ object Util {
 
   def createSession(uri: String)
     (implicit securityOptions : Option[Session.SecurityOptions]) : Session = securityOptions match {
-    case Some(securityOptions) => Session.connect(uri)
+    case Some(securityOptions) => Session.connect(securityOptions, uri)
     case None => Session.connect(uri)
   }
 
