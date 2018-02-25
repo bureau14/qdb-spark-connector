@@ -8,6 +8,7 @@ import org.apache.spark.{SparkContext}
 import org.scalatest.{BeforeAndAfterAll, FunSuite}
 
 import net.quasardb.qdb._;
+import net.quasardb.qdb.ts._;
 
 import net.quasardb.spark._
 import net.quasardb.spark.rdd._
@@ -20,7 +21,7 @@ class QdbTagsSuite extends FunSuite with BeforeAndAfterAll {
   private val qdbPort: Int = 2838
   private var qdbProc: Process = _
   private var qdbUri: String = "qdb://127.0.0.1:" + qdbPort
-  implicit val securityOptions : Option[QdbSession.SecurityOptions] = None
+  implicit val securityOptions : Option[Session.SecurityOptions] = None
 
   private var sqlContext: SQLContext = _
   private val key1: String = java.util.UUID.randomUUID.toString
