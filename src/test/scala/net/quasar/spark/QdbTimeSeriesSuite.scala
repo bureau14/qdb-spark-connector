@@ -255,7 +255,6 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
       .qdbDoubleColumn(qdbUri, newTable, doubleColumn.getName, doubleRanges)
       .collect()
 
-
     for (expected <- doubleCollection.asScala) {
       results should contain(DoubleRDD.fromJava(expected))
     }
@@ -514,13 +513,19 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
     // Seed our timeseries sensors with random double data for each of the timepoints
     for (s <- sensors; c <- columns) {
       val doubleCollection = new QdbDoubleColumnCollection(c.getName)
-      doubleCollection.addAll(
-        points
-          .map { new Timespec(_) }
-          .map { new QdbDoubleColumnValue(_, r.nextDouble)}
-          .toList
-          .filter(_ => r.nextBoolean) // randomly filter 50% of the data points
-          .asJava)
+
+      println("adding data points to collection: " + c.getName);
+
+      val points_ = points
+        .map { new Timespec(_) }
+        .map { new QdbDoubleColumnValue(_, r.nextDouble)}
+        .toList
+        .filter(_ => r.nextBoolean) // randomly filter 50% of the data points
+        .asJava
+
+      println("inserting points: " + points_.toString);
+
+      doubleCollection.addAll(points_)
 
       Util.createCluster(qdbUri)
         .timeSeries(s)
