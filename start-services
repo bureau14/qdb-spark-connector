@@ -4,9 +4,5 @@ CMD="qdb/bin/qdbd"
 ARGS="-a 127.0.0.1:28360 --security=false --transient -r qdb/db"
 SECURE_ARGS="-a 127.0.0.1:28361 --security=true --cluster-private-file=cluster-secret-key.txt --user-list=users.txt --transient -r qdb/securedb"
 
-echo "Starting qdbd..."
 $CMD $ARGS 1>qdbd.out.txt 2>qdbd.err.txt &
-
-echo "Starting qdbd (secure)..."
-
 $CMD $SECURE_ARGS 1>qdbd.secure.out.txt 2>qdbd.secure.err.txt &
