@@ -22,3 +22,6 @@ libraryDependencies ++= Seq(
 )
 
 parallelExecution in Test := false
+
+scalacOptions += "-feature"
+scalacOptions += "-deprecation"
