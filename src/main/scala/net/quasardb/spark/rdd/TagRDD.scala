@@ -7,7 +7,7 @@ import org.apache.spark._
 import net.quasardb.qdb._
 
 import net.quasardb.spark.partitioner._
-import net.quasardb.spark.rdd.Util
+// import net.quasardb.spark.rdd.Util
 
 class QdbTagRDD(
   sc: SparkContext,

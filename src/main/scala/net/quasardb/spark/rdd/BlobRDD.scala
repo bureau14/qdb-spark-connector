@@ -14,7 +14,7 @@ import net.quasardb.qdb.ts.TimeRange
 
 import net.quasardb.spark.partitioner._
 import net.quasardb.spark.df.BlobDataFrameFunctions
-import net.quasardb.spark.rdd.Util
+// import net.quasardb.spark.rdd.Util
 
 class BlobRDD(
   sc: SparkContext,

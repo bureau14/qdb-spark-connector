@@ -13,7 +13,7 @@ import net.quasardb.qdb.ts.{Table, Writer, Row}
 import net.quasardb.qdb.exception.OperationException
 
 import net.quasardb.spark.connection.QdbConnection
-import net.quasardb.spark.rdd.{DoubleRDD, BlobRDD}
+// import net.quasardb.spark.rdd.{DoubleRDD, BlobRDD}
 
 import retry._
 import retry.Success

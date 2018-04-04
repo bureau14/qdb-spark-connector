@@ -15,7 +15,7 @@ import net.quasardb.qdb.ts.{TimeRange, Timespec}
 import scala.collection.JavaConversions._
 import scala.reflect.ClassTag
 
-import net.quasardb.spark.rdd.{AggregateQuery, Util}
+// import net.quasardb.spark.rdd.{AggregateQuery, Util}
 import net.quasardb.spark.partitioner._
 
 case class DoubleAggregation(

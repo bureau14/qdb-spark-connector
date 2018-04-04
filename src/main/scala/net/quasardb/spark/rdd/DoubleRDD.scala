@@ -17,7 +17,7 @@ import scala.reflect.ClassTag
 
 import net.quasardb.spark.df.DoubleDataFrameFunctions
 import net.quasardb.spark.partitioner._
-import net.quasardb.spark.rdd.Util
+// import net.quasardb.spark.rdd.Util
 
 class DoubleRDD(
   sc: SparkContext,

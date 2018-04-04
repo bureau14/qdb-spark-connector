@@ -11,7 +11,7 @@ import net.quasardb.qdb.Session
 import scala.collection.JavaConversions._
 import scala.reflect.ClassTag
 
-import net.quasardb.spark.rdd.Util
+// import net.quasardb.spark.rdd.Util
 import net.quasardb.spark.partitioner._
 
 class QdbStringRDD(prev: RDD[String])(implicit securityOptions : Option[Session.SecurityOptions])

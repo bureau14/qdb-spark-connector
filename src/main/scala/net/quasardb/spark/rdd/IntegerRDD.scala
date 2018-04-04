@@ -7,8 +7,7 @@ import org.apache.spark._
 
 import net.quasardb.qdb.Session
 
-
-import net.quasardb.spark.rdd.Util
+// import net.quasardb.spark.rdd.Util
 import net.quasardb.spark.partitioner._
 
 class QdbIntegerRDD(prev: RDD[String])(implicit securityOptions : Option[Session.SecurityOptions])
