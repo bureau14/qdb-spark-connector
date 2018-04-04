@@ -1,7 +1,7 @@
 package net.quasardb.spark.rdd
 
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{SQLContext, DataFrame}
+import org.apache.spark.sql.{SparkSession, DataFrame}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql._
 import org.apache.spark._
@@ -35,12 +35,12 @@ class TableRDD(
     emptyList.iterator
   }
 
-  def toDataFrame(sqlContext: SQLContext): DataFrame = {
+  def toDataFrame(sparkSession: SparkSession): DataFrame = {
     val struct =
       StructType(
         StructField("timestamp", TimestampType, false) ::
         StructField("value", DoubleType, false) :: Nil)
 
-    sqlContext.createDataFrame(map(TableDataFrameFunctions.toRow), struct(Set("timestamp", "value")))
+    sparkSession.createDataFrame(map(TableDataFrameFunctions.toRow), struct(Set("timestamp", "value")))
   }
 }

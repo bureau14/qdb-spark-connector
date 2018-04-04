@@ -8,8 +8,7 @@ import java.time.{Instant, LocalDateTime, LocalTime, Duration}
 
 import org.apache.spark.sql.catalyst.encoders.RowEncoder
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{SQLContext, Row => SparkRow, SaveMode}
-import org.apache.spark.{SparkContext, SparkException}
+import org.apache.spark.sql.{SparkSession, Row => SparkRow, SaveMode}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.functions._
 
@@ -41,9 +40,11 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
       "Pb+d1o3HuFtxEb5uTl9peU89ze9BZTK9f8KdKr4k7zGA="))
 
   private val qdbUri: String = "qdb://127.0.0.1:" + qdbPort
-  private val sparkContext: SparkContext = new SparkContext("local[2]", "QdbTimeSeriesSuite")
-  private val sqlContext: SQLContext = new SQLContext(sparkContext)
-  import sqlContext.implicits._
+  private val sparkSession: SparkSession = SparkSession.builder()
+    .master("local[2]")
+    .appName("QdbTimeSeriesSuite")
+    .getOrCreate()
+  import sparkSession.implicits._
 
   private var table: String = _
 
@@ -120,7 +121,7 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
 
   override protected def afterAll(): Unit = {
     try {
-      sqlContext
+      sparkSession
         .sparkContext
         .stop()
 
@@ -135,7 +136,7 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
     */
 
   test("all double data can be retrieved as an RDD") {
-    val results = sqlContext
+    val results = sparkSession
       .qdbDoubleColumn(qdbUri, table, doubleColumn.getName, doubleRanges)
       .collect()
 
@@ -145,7 +146,7 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
   }
 
   test("all double data can be retrieved as a dataframe") {
-    val results = sqlContext
+    val results = sparkSession
       .qdbDoubleColumnAsDataFrame(qdbUri, table, doubleColumn.getName, doubleRanges)
       .collect()
 
@@ -155,7 +156,7 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
   }
 
   test("all double data can be aggregated as an RDD") {
-    val results = sqlContext
+    val results = sparkSession
       .qdbAggregateDoubleColumn(
         qdbUri,
         table,
@@ -172,7 +173,7 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
   }
 
   test("all double data can be aggregated as a DataFrame") {
-    val results = sqlContext
+    val results = sparkSession
       .qdbAggregateDoubleColumnAsDataFrame(
         qdbUri,
         table,
@@ -201,13 +202,13 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
     val dataSet =
       doubleCollection.asScala.map(DoubleRDD.fromJava).toList
 
-    sqlContext
+    sparkSession
       .sparkContext
       .parallelize(dataSet)
       .toQdbDoubleColumn(qdbUri, newTable, doubleColumn.getName)
 
     // Retrieve our test data
-    val results = sqlContext
+    val results = sparkSession
       .qdbDoubleColumn(qdbUri, newTable, doubleColumn.getName, doubleRanges)
       .collect()
 
@@ -226,12 +227,12 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
 
     series.create(defaultShardSize, columns)
 
-    sqlContext
+    sparkSession
       .qdbDoubleColumn(qdbUri, table, doubleColumn.getName, doubleRanges)
       .toQdbDoubleColumn(qdbUri, newTable, doubleColumn.getName)
 
     // Retrieve our test data
-    val results = sqlContext
+    val results = sparkSession
       .qdbDoubleColumn(qdbUri, newTable, doubleColumn.getName, doubleRanges)
       .collect()
 
@@ -250,12 +251,12 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
 
     series.create(defaultShardSize, columns)
 
-    sqlContext
+    sparkSession
       .qdbDoubleColumnAsDataFrame(qdbUri, table, doubleColumn.getName, doubleRanges)
       .toQdbDoubleColumn(qdbUri, newTable, doubleColumn.getName)
 
     // Retrieve our test data
-    val results = sqlContext
+    val results = sparkSession
       .qdbDoubleColumnAsDataFrame(qdbUri, newTable, doubleColumn.getName, doubleRanges)
       .collect()
 
@@ -284,7 +285,7 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
 
 
   test("all blob data can be retrieved as an RDD") {
-    val results = sqlContext
+    val results = sparkSession
       .qdbBlobColumn(qdbUri, table, blobColumn.getName, blobRanges)
       .collect()
       .map { x => hashBlobResult(x) }
@@ -300,7 +301,7 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
 
 
   test("all blob data can be retrieved as a dataframe") {
-    val df = sqlContext
+    val df = sparkSession
       .qdbBlobColumnAsDataFrame(qdbUri, table, blobColumn.getName, blobRanges)
 
     val results = df
@@ -320,7 +321,7 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
   }
 
   test("all blob data can be aggregated as an RDD") {
-    val results = sqlContext
+    val results = sparkSession
       .qdbAggregateBlobColumn(
         qdbUri,
         table,
@@ -337,7 +338,7 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
   }
 
   test("all blob data can be aggregated as a DataFrame") {
-    val results = sqlContext
+    val results = sparkSession
       .qdbAggregateBlobColumnAsDataFrame(
         qdbUri,
         table,
@@ -363,12 +364,12 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
 
     series.create(defaultShardSize, columns)
 
-    sqlContext
+    sparkSession
       .qdbBlobColumn(qdbUri, table, blobColumn.getName, blobRanges)
       .toQdbBlobColumn(qdbUri, newTable, blobColumn.getName)
 
     // Retrieve our test data
-    val results = sqlContext
+    val results = sparkSession
       .qdbBlobColumn(qdbUri, newTable, blobColumn.getName, blobRanges)
       .collect()
       .map(hashBlobResult)
@@ -392,12 +393,12 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
 
     series.create(defaultShardSize, columns)
 
-    sqlContext
+    sparkSession
       .qdbBlobColumnAsDataFrame(qdbUri, table, blobColumn.getName, blobRanges)
       .toQdbBlobColumn(qdbUri, newTable, blobColumn.getName)
 
     // Retrieve our test data
-    val results = sqlContext
+    val results = sparkSession
       .qdbBlobColumnAsDataFrame(qdbUri, newTable, blobColumn.getName, blobRanges)
       .collect()
 
@@ -430,20 +431,20 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
         StructField("column1", DoubleType, true) ::
         StructField("column2", BinaryType, true) :: Nil)
 
-    val rdd : RDD[QdbRow] = sqlContext
+    val rdd : RDD[QdbRow] = sparkSession
       .sparkContext
       .parallelize(dataSet)
 
-    val df = sqlContext
+    val df = sparkSession
       .createDataFrame(rdd.map(TableDataFrameFunctions.toRow), schema)
       .toQdbTable(qdbUri, newTable)
 
 
     // Retrieve our test data
-    val doubleResults = sqlContext
+    val doubleResults = sparkSession
       .qdbDoubleColumn(qdbUri, newTable, doubleColumn.getName, doubleRanges)
       .collect()
-    val blobResults = sqlContext
+    val blobResults = sparkSession
       .qdbBlobColumn(qdbUri, newTable, blobColumn.getName, blobRanges)
       .collect()
       .map(hashBlobResult)
@@ -523,7 +524,7 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
     // quasardb.
     val inputDataFrames =
       for (s <- sensors)
-        yield sqlContext
+        yield sparkSession
           .qdbAggregateDoubleColumnAsDataFrame(
             qdbUri,
             s,
@@ -557,7 +558,7 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
 
     val df = inputDataFrames
     // First step is to union all our dataframes into a single, big dataframe
-      .reduceLeft((lhs, rhs) => lhs.unionAll(rhs))
+      .reduceLeft((lhs, rhs) => lhs.union(rhs))
 
     // Collect all relevant aggregate outputs per table (= sensor), per timespan
     .groupBy("table", "begin", "end")

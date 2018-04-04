@@ -1,7 +1,7 @@
 package net.quasardb.spark.rdd
 
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{SQLContext, Row, DataFrame}
+import org.apache.spark.sql.{SparkSession, Row, DataFrame}
 import org.apache.spark.sql.types._
 import org.apache.spark._
 
@@ -57,13 +57,13 @@ class BlobAggregateRDD(
     series.blobAggregate(column, aggregate).toList.map(BlobAggregateRDD.fromJava).iterator
   }
 
-  def toDataFrame(sqlContext: SQLContext): DataFrame = {
+  def toDataFrame(sparkSession: SparkSession): DataFrame = {
     val struct =
       StructType(
         StructField("count", LongType, true) ::
         StructField("result", BinaryType, true) :: Nil)
 
-    sqlContext.createDataFrame(map(BlobAggregateRDD.toRow), struct(Set("count", "result")))
+    sparkSession.createDataFrame(map(BlobAggregateRDD.toRow), struct(Set("count", "result")))
   }
 }
 

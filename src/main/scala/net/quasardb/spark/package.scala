@@ -5,7 +5,7 @@ import scala.language.implicitConversions
 import java.sql.Timestamp
 
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{DataFrame, SQLContext}
+import org.apache.spark.sql.{DataFrame, SparkSession}
 
 import net.quasardb.spark.df._
 import net.quasardb.spark.rdd._
@@ -15,11 +15,11 @@ import net.quasardb.qdb.ts.{Row, TimeRange}
 
 package object spark {
 
-  implicit class QdbContext(@transient val sqlContext : SQLContext) {
+  implicit class QdbContext(@transient val sparkSession : SparkSession) {
     def tagAsDataFrame(
       uri: String,
       tag: String)(implicit securityOptions : Option[Session.SecurityOptions]) = {
-      new QdbTagRDD(sqlContext.sparkContext, uri, tag)
+      new QdbTagRDD(sparkSession.sparkContext, uri, tag)
     }
 
     def qdbDoubleColumn(
@@ -27,14 +27,14 @@ package object spark {
       table: String,
       column: String,
       ranges: Array[TimeRange])(implicit securityOptions : Option[Session.SecurityOptions]) = {
-      new DoubleRDD(sqlContext.sparkContext, uri, table, column, ranges)
+      new DoubleRDD(sparkSession.sparkContext, uri, table, column, ranges)
     }
 
     def qdbTable(
       uri: String,
       table: String,
       ranges: Array[TimeRange])(implicit securityOptions : Option[Session.SecurityOptions]) = {
-      new TableRDD(sqlContext.sparkContext, uri, table, ranges)
+      new TableRDD(sparkSession.sparkContext, uri, table, ranges)
     }
 
     def qdbAggregateDoubleColumn(
@@ -42,7 +42,7 @@ package object spark {
       table: String,
       columns: Seq[String],
       input: Seq[AggregateQuery])(implicit securityOptions : Option[Session.SecurityOptions])= {
-      new DoubleAggregateRDD(sqlContext.sparkContext, uri, table, columns, input)
+      new DoubleAggregateRDD(sparkSession.sparkContext, uri, table, columns, input)
     }
 
     def qdbAggregateDoubleColumnAsDataFrame(
@@ -51,7 +51,7 @@ package object spark {
       columns: Seq[String],
       input: Seq[AggregateQuery])(implicit securityOptions : Option[Session.SecurityOptions])= {
       qdbAggregateDoubleColumn(uri, table, columns, input)
-        .toDataFrame(sqlContext)
+        .toDataFrame(sparkSession)
     }
 
     def qdbDoubleColumnAsDataFrame(
@@ -60,7 +60,7 @@ package object spark {
       column: String,
       ranges: Array[TimeRange])(implicit securityOptions : Option[Session.SecurityOptions]) = {
       qdbDoubleColumn(uri, table, column, ranges)
-        .toDataFrame(sqlContext)
+        .toDataFrame(sparkSession)
     }
 
     def qdbBlobColumn(
@@ -68,7 +68,7 @@ package object spark {
       table: String,
       column: String,
       ranges: Array[TimeRange])(implicit securityOptions : Option[Session.SecurityOptions]) = {
-      new BlobRDD(sqlContext.sparkContext, uri, table, column, ranges)
+      new BlobRDD(sparkSession.sparkContext, uri, table, column, ranges)
     }
 
     def qdbAggregateBlobColumn(
@@ -76,7 +76,7 @@ package object spark {
       table: String,
       column: String,
       input: Seq[AggregateQuery])(implicit securityOptions : Option[Session.SecurityOptions]) = {
-      new BlobAggregateRDD(sqlContext.sparkContext, uri, table, column, input)
+      new BlobAggregateRDD(sparkSession.sparkContext, uri, table, column, input)
     }
 
     def qdbAggregateBlobColumnAsDataFrame(
@@ -85,7 +85,7 @@ package object spark {
       column: String,
       input: Seq[AggregateQuery])(implicit securityOptions : Option[Session.SecurityOptions]) = {
       qdbAggregateBlobColumn(uri, table, column, input)
-        .toDataFrame(sqlContext)
+        .toDataFrame(sparkSession)
     }
 
     def qdbBlobColumnAsDataFrame(
@@ -94,7 +94,7 @@ package object spark {
       column: String,
       ranges: Array[TimeRange])(implicit securityOptions : Option[Session.SecurityOptions]) = {
       qdbBlobColumn(uri, table, column, ranges)
-        .toDataFrame(sqlContext)
+        .toDataFrame(sparkSession)
     }
   }
 

@@ -2,8 +2,7 @@ package net.quasardb.spark
 
 import java.nio.ByteBuffer
 
-import org.apache.spark.sql.SQLContext
-import org.apache.spark.{SparkContext}
+import org.apache.spark.sql.SparkSession
 
 import org.scalatest.{BeforeAndAfterAll, FunSuite}
 
@@ -22,7 +21,7 @@ class QdbTagsSuite extends FunSuite with BeforeAndAfterAll {
   private var qdbUri: String = "qdb://127.0.0.1:" + qdbPort
   implicit val securityOptions : Option[Session.SecurityOptions] = None
 
-  private var sqlContext: SQLContext = _
+  private var sparkSession: SparkSession = _
   private val key1: String = java.util.UUID.randomUUID.toString
   private val key2: String = java.util.UUID.randomUUID.toString
   private val key3: String = java.util.UUID.randomUUID.toString
@@ -33,7 +32,10 @@ class QdbTagsSuite extends FunSuite with BeforeAndAfterAll {
   override protected def beforeAll(): Unit = {
     super.beforeAll()
 
-    sqlContext = new SQLContext(new SparkContext("local[2]", "QdbTagsSuite"))
+    sparkSession = SparkSession.builder()
+      .master("local[2]")
+      .appName("QdbTagsSuite")
+      .getOrCreate()
 
     // Store a few default entries
     val entry1 = new QdbCluster(qdbUri).integer(key1)
@@ -51,8 +53,7 @@ class QdbTagsSuite extends FunSuite with BeforeAndAfterAll {
 
   override protected def afterAll(): Unit = {
     try {
-      sqlContext
-        .sparkContext
+      sparkSession
         .stop()
 
     } finally {
@@ -61,11 +62,11 @@ class QdbTagsSuite extends FunSuite with BeforeAndAfterAll {
   }
 
   test("searching for tags") {
-    val results1 = sqlContext
+    val results1 = sparkSession
       .tagAsDataFrame(qdbUri, tag1)
       .collect().sorted
 
-    val results2 = sqlContext
+    val results2 = sparkSession
       .tagAsDataFrame(qdbUri, tag2)
       .collect().sorted
 
@@ -79,7 +80,7 @@ class QdbTagsSuite extends FunSuite with BeforeAndAfterAll {
   }
 
   test("searching for integers by tag") {
-    val results = sqlContext
+    val results = sparkSession
       .tagAsDataFrame(qdbUri, tag1)
       .getInteger()
       .collect().sorted
@@ -90,7 +91,7 @@ class QdbTagsSuite extends FunSuite with BeforeAndAfterAll {
   }
 
   test("searching for string by tag") {
-    val results = sqlContext
+    val results = sparkSession
       .tagAsDataFrame(qdbUri, tag2)
       .getString()
       .collect().sorted
