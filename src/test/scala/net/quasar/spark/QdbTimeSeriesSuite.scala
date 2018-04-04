@@ -503,7 +503,8 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
         .filter(_ => r.nextBoolean) // randomly filter 50% of the data points
         .asJava
 
-      println("inserting points: " + points_.toString);
+      // *XXX* temporary debug info for internal error
+      // println("inserting points: " + points_.toString);
 
       doubleCollection.addAll(points_)
 
