@@ -1,5 +1,7 @@
 package net.quasardb
 
+import scala.language.implicitConversions
+
 import java.sql.Timestamp
 
 import org.apache.spark.rdd.RDD
