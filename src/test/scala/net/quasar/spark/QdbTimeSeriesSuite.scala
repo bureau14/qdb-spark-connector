@@ -31,7 +31,7 @@ import scala.sys.process._
 
 class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
 
-  private var qdbPort: Int = 2837
+  private var qdbPort: Int = 28361
   private var qdbProc: Process = _
   private var defaultShardSize: Long = 1000 * 60 * 60 * 24 // 24 hours
 
@@ -65,26 +65,8 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
     buf
   }
 
-  private def launchQdb():Process = {
-    val dataRoot = java.nio.file.Files.createTempDirectory(java.util.UUID.randomUUID.toString).toString
-    val p = Process("qdb/bin/qdbd --cluster-private-file cluster-secret-key.txt --user-list users.txt -r " + dataRoot + " -a 127.0.0.1:" + qdbPort).run
-
-    // :TODO: fix, proper 'wait for qdb to be alive'
-    Thread.sleep(3000)
-    p
-  }
-
-  private def destroyQdb(p:Process):Unit = {
-    p.destroy
-
-    // :TODO: fix, proper 'wait for qdb to be dead'
-    Thread.sleep(3000)
-  }
-
   override protected def beforeAll(): Unit = {
     super.beforeAll()
-
-    qdbProc = launchQdb
 
     // Create a timeseries table with random id
     table = java.util.UUID.randomUUID.toString
@@ -141,8 +123,6 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
       sqlContext
         .sparkContext
         .stop()
-
-      destroyQdb(qdbProc)
 
     } finally {
       super.afterAll()

@@ -18,8 +18,7 @@ import scala.language.implicitConversions
 
 class QdbTagsSuite extends FunSuite with BeforeAndAfterAll {
 
-  private val qdbPort: Int = 2838
-  private var qdbProc: Process = _
+  private val qdbPort: Int = 28360
   private var qdbUri: String = "qdb://127.0.0.1:" + qdbPort
   implicit val securityOptions : Option[Session.SecurityOptions] = None
 
@@ -31,26 +30,9 @@ class QdbTagsSuite extends FunSuite with BeforeAndAfterAll {
   private val tag1: String = java.util.UUID.randomUUID.toString
   private val tag2: String = java.util.UUID.randomUUID.toString
 
-  private def launchQdb():Process = {
-    val dataRoot = java.nio.file.Files.createTempDirectory(java.util.UUID.randomUUID.toString).toString
-    val p = Process("qdb/bin/qdbd --security 0 -r " + dataRoot + " -a 127.0.0.1:" + qdbPort).run
-
-    // :TODO: fix, proper 'wait for qdb to be alive'
-    Thread.sleep(3000)
-    p
-  }
-
-  private def destroyQdb(p:Process):Unit = {
-    p.destroy
-
-    // :TODO: fix, proper 'wait for qdb to be dead'
-    Thread.sleep(3000)
-  }
-
   override protected def beforeAll(): Unit = {
     super.beforeAll()
 
-    qdbProc = launchQdb
     sqlContext = new SQLContext(new SparkContext("local[2]", "QdbTagsSuite"))
 
     // Store a few default entries
@@ -72,8 +54,6 @@ class QdbTagsSuite extends FunSuite with BeforeAndAfterAll {
       sqlContext
         .sparkContext
         .stop()
-
-      destroyQdb(qdbProc)
 
     } finally {
       super.afterAll()
