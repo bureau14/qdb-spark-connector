@@ -7,7 +7,6 @@ name := "qdb-spark-connector"
 version := qdbVersion
 
 resolvers += Resolver.mavenLocal
-resolvers += "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"
 resolvers += "softprops-maven" at "http://dl.bintray.com/content/softprops/maven"
 resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
 spName := "quasardb/spark-connector"
@@ -27,12 +26,12 @@ libraryDependencies ++= Seq(
   "com.novocode" % "junit-interface" % "0.9" % "test",
 
   "net.quasardb" % "qdb" % qdbVersion,
-  "net.quasardb" % "qdb" % qdbVersion classifier "jni",
-  "net.quasardb" % "qdb" % qdbVersion classifier "jni-linux-x86_64",
-  "net.quasardb" % "qdb" % qdbVersion classifier "jni-osx-x86_64",
-  "net.quasardb" % "qdb" % qdbVersion classifier "jni-freebsd-x86_64",
-  "net.quasardb" % "qdb" % qdbVersion classifier "jni-windows-x86_64",
-  "net.quasardb" % "qdb" % qdbVersion classifier "jni-windows-x86_32"
+  "net.quasardb" % "jni" % qdbVersion
+  "net.quasardb" % "jni" % qdbVersion classifier "linux-x86_64",
+  "net.quasardb" % "jni" % qdbVersion classifier "osx-x86_64",
+  "net.quasardb" % "jni" % qdbVersion classifier "freebsd-x86_64",
+  "net.quasardb" % "jni" % qdbVersion classifier "windows-x86_64",
+  "net.quasardb" % "jni" % qdbVersion classifier "windows-x86_32"
 )
 
 parallelExecution in Test := false
