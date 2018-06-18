@@ -7,6 +7,7 @@ name := "qdb-spark-connector"
 version := qdbVersion
 
 resolvers += Resolver.mavenLocal
+resolvers += "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"
 resolvers += "softprops-maven" at "http://dl.bintray.com/content/softprops/maven"
 resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
 spName := "quasardb/spark-connector"
