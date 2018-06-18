@@ -26,7 +26,7 @@ libraryDependencies ++= Seq(
   "com.novocode" % "junit-interface" % "0.9" % "test",
 
   "net.quasardb" % "qdb" % qdbVersion,
-  "net.quasardb" % "jni" % qdbVersion
+  "net.quasardb" % "jni" % qdbVersion,
   "net.quasardb" % "jni" % qdbVersion classifier "linux-x86_64",
   "net.quasardb" % "jni" % qdbVersion classifier "osx-x86_64",
   "net.quasardb" % "jni" % qdbVersion classifier "freebsd-x86_64",
