@@ -7,6 +7,8 @@ name := "qdb-spark-connector"
 version := qdbVersion
 
 resolvers += Resolver.mavenLocal
+resolvers += "softprops-maven" at "http://dl.bintray.com/content/softprops/maven"
+
 spName := "quasardb/spark-connector"
 scalaVersion := "2.10.6"
 crossScalaVersions := Seq("2.10.5", "2.11.7")
