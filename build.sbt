@@ -1,7 +1,7 @@
-val qdbVersion = Option(System.getProperty("qdb.api.version")) match {
-  case Some(version) => version
-  case None => System.getenv("QDB_API_VERSION")
-}
+// val qdbVersion = Option(System.getProperty("qdb.api.version")) match {
+//   case Some(version) => version
+//   case None => "0.0.1-SNAPSHOT"
+// }
 
 name := "qdb-spark-connector"
 version := qdbVersion
