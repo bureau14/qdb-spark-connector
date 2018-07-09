@@ -4,7 +4,7 @@
 // }
 
 name := "qdb-spark-connector"
-version := qdbVersion
+version := "qdbVersion"
 
 resolvers += Resolver.mavenLocal
 resolvers += "softprops-maven" at "http://dl.bintray.com/content/softprops/maven"
@@ -25,13 +25,13 @@ libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.0.4" % "test",
   "com.novocode" % "junit-interface" % "0.9" % "test",
 
-  "net.quasardb" % "qdb" % qdbVersion,
-  "net.quasardb" % "jni" % qdbVersion,
-  "net.quasardb" % "jni" % qdbVersion classifier "linux-x86_64",
-  "net.quasardb" % "jni" % qdbVersion classifier "osx-x86_64",
-  "net.quasardb" % "jni" % qdbVersion classifier "freebsd-x86_64",
-  "net.quasardb" % "jni" % qdbVersion classifier "windows-x86_64",
-  "net.quasardb" % "jni" % qdbVersion classifier "windows-x86_32"
+  "net.quasardb" % "qdb" % "qdbVersion",
+  "net.quasardb" % "jni" % "qdbVersion",
+  "net.quasardb" % "jni" % "qdbVersion" classifier "linux-x86_64",
+  "net.quasardb" % "jni" % "qdbVersion" classifier "osx-x86_64",
+  "net.quasardb" % "jni" % "qdbVersion" classifier "freebsd-x86_64",
+  "net.quasardb" % "jni" % "qdbVersion" classifier "windows-x86_64",
+  "net.quasardb" % "jni" % "qdbVersion" classifier "windows-x86_32"
 )
 
 parallelExecution in Test := false
