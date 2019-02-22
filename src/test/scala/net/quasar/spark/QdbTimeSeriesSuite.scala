@@ -35,7 +35,7 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
   private var defaultShardSize: Long = 1000 * 60 * 60 * 24 // 24 hours
 
   implicit val securityOptions : Option[Session.SecurityOptions] =
-    Some(new Session.SecurityOptions("qdb-api-python",
+    Some(new Session.SecurityOptions("qdb-spark-connector",
       "SoHHpH26NtZvfq5pqm/8BXKbVIkf+yYiVZ5fQbq1nbcI=",
       "Pb+d1o3HuFtxEb5uTl9peU89ze9BZTK9f8KdKr4k7zGA="))
 
