@@ -20,7 +20,7 @@ organizationHomepage := Some(url("https://www.quasardb.net"))
 libraryDependencies ++= Seq(
   "me.lessis" %% "retry" % "0.2.0",
   "org.apache.logging.log4j" % "log4j-api" % "2.11.2",
-  "org.apache.logging.log4j" % "log4j-core" % "2.11.2"
+  "org.apache.logging.log4j" % "log4j-core" % "2.11.2",
   "org.scalatest" %% "scalatest" % "3.0.4" % "test",
   "com.novocode" % "junit-interface" % "0.9" % "test",
 
