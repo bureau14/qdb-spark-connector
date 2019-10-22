@@ -54,6 +54,10 @@ class QdbTagsSuite extends FunSuite with BeforeAndAfterAll {
   override protected def afterAll(): Unit = {
     try {
       sparkSession
+        .sparkContext
+        .stop()
+
+      sparkSession
         .stop()
 
     } finally {
