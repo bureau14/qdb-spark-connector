@@ -124,6 +124,9 @@ class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
       sparkSession
         .sparkContext
         .stop()
+        
+      sparkSession
+        .stop()
 
     } finally {
       super.afterAll()
