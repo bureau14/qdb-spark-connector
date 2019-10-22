@@ -16,7 +16,7 @@ import org.scalatest.{BeforeAndAfterAll, FunSuite}
 import org.scalatest.Matchers._
 
 import net.quasardb.qdb._;
-import net.quasardb.qdb.ts.{Row => QdbRow, Column, Value, Timespec, TimeRange, Table};
+import net.quasardb.qdb.ts.{WritableRow => QdbRow, Column, Value, Timespec, TimeRange, Table};
 
 import net.quasardb.spark._
 import net.quasardb.spark.df._

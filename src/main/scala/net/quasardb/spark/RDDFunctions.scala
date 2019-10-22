@@ -4,10 +4,10 @@ import java.sql.Timestamp
 import org.apache.spark.rdd.RDD
 
 import net.quasardb.qdb.Session
-import net.quasardb.qdb.ts.Row
+import net.quasardb.qdb.ts.WritableRow
 import net.quasardb.spark.rdd._
 
-class TableRDDFunctions[A <: Row](rdd: RDD[A]) extends Serializable {
+class TableRDDFunctions[A <: WritableRow](rdd: RDD[A]) extends Serializable {
 
   def toQdbTable(
     uri: String,

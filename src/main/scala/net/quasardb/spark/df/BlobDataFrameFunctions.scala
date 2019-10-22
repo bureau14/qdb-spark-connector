@@ -23,7 +23,7 @@ class BlobDataFrameFunctions(data: DataFrame) extends Serializable {
 
 
 object BlobDataFrameFunctions {
-  def fromRow(row:WritableRow):(Timestamp, Array[Byte]) = {
+  def fromRow(row:Row):(Timestamp, Array[Byte]) = {
     (row.getTimestamp(0), row.getAs[Array[Byte]](1))
   }
 

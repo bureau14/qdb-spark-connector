@@ -10,7 +10,7 @@ import java.nio.charset.StandardCharsets.UTF_8
 import java.sql.Timestamp
 
 import net.quasardb.qdb.Session
-import net.quasardb.qdb.ts.{Row, TimeRange}
+import net.quasardb.qdb.ts.{WritableRow, TimeRange}
 
 import scala.collection.JavaConversions._
 import scala.reflect.ClassTag

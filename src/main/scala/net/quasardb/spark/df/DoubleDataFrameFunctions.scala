@@ -23,7 +23,7 @@ class DoubleDataFrameFunctions(data: DataFrame) extends Serializable {
 
 
 object DoubleDataFrameFunctions {
-  def fromRow(row:WritableRow):(Timestamp, Double) = {
+  def fromRow(row:Row):(Timestamp, Double) = {
     (row.getTimestamp(0), row.getDouble(1))
   }
 

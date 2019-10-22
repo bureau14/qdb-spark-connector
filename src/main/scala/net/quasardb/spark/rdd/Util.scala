@@ -9,7 +9,7 @@ import scala.concurrent.{Await, Future}
 import odelay.Timer
 
 import net.quasardb.qdb._
-import net.quasardb.qdb.ts.{Table, Writer, Row}
+import net.quasardb.qdb.ts.{Table, Writer, Row, WritableRow}
 import net.quasardb.qdb.exception.OperationException
 
 import net.quasardb.spark.connection.QdbConnection
