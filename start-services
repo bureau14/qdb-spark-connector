@@ -2,7 +2,7 @@
 
 CMD="qdb/bin/qdbd"
 ARGS="-a 127.0.0.1:28360 --log-level debug --security=false --storage-engine=transient"
-SECURE_ARGS="-a 127.0.0.1:28361 --log-level debug --security=true --cluster-private-file=cluster-secret-key.txt --user-list=users.txt --storage-engine=transient"
+SECURE_ARGS="-a 127.0.0.1:28362 --log-level debug --security=true --cluster-private-file=cluster-secret-key.txt --user-list=users.txt --storage-engine=transient"
 
 $CMD $ARGS 1>qdbd.out.txt 2>qdbd.err.txt &
 $CMD $SECURE_ARGS 1>qdbd.secure.out.txt 2>qdbd.secure.err.txt &

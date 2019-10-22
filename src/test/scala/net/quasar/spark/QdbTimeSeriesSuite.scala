@@ -30,7 +30,7 @@ import scala.sys.process._
 
 class QdbTimeSeriesSuite extends FunSuite with BeforeAndAfterAll {
 
-  private var qdbPort: Int = 28361
+  private var qdbPort: Int = 28362
   private var qdbProc: Process = _
   private var defaultShardSize: Long = 1000 * 60 * 60 * 24 // 24 hours
 
