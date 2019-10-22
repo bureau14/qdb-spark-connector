@@ -23,15 +23,15 @@ class TableRDD(
   val uri: String,
   val table: String,
   val ranges: Array[TimeRange])(implicit securityOptions : Option[Session.SecurityOptions])
-    extends RDD[Row](sc, Nil) {
+    extends RDD[WritableRow](sc, Nil) {
 
   override protected def getPartitions = QdbPartitioner.computePartitions(uri)
 
   override def compute(
     split: Partition,
-    context: TaskContext): Iterator[Row] = {
+    context: TaskContext): Iterator[WritableRow] = {
     // Not implemented yet
-    val emptyList : List[Row] = List()
+    val emptyList : List[WritableRow] = List()
     emptyList.iterator
   }
 
