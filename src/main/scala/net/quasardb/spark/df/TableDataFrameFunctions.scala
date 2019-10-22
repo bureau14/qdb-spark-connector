@@ -8,7 +8,7 @@ import org.apache.spark.sql.types._
 import org.apache.spark.sql._
 
 import net.quasardb.qdb._
-import net.quasardb.qdb.ts.{Row => QdbRow, Value}
+import net.quasardb.qdb.ts.{WritableRow => QdbRow, Value}
 import net.quasardb.spark.rdd.Util
 import net.quasardb.spark.rdd.TableRDD
 

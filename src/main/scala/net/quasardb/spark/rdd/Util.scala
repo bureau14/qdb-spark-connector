@@ -9,7 +9,7 @@ import scala.concurrent.{Await, Future}
 import odelay.Timer
 
 import net.quasardb.qdb._
-import net.quasardb.qdb.ts.{Table, Writer, Row}
+import net.quasardb.qdb.ts.{Table, Writer, WritableRow}
 import net.quasardb.qdb.exception.OperationException
 
 import net.quasardb.spark.connection.QdbConnection
@@ -35,7 +35,7 @@ object Util {
   def appendRows(
     uri: String,
     table: String,
-    values: Iterator[Row])(implicit securityOptions : Option[Session.SecurityOptions]): Unit = {
+    values: Iterator[WritableRow])(implicit securityOptions : Option[Session.SecurityOptions]): Unit = {
     implicit val success = Success[Boolean](_ == true)
     implicit val timer = odelay.Timer.default
 

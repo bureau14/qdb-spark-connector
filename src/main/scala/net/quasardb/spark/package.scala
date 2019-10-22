@@ -11,7 +11,7 @@ import net.quasardb.spark.df._
 import net.quasardb.spark.rdd._
 
 import net.quasardb.qdb.Session;
-import net.quasardb.qdb.ts.{Row, TimeRange}
+import net.quasardb.qdb.ts.{WritableRow, TimeRange}
 
 package object spark {
 
@@ -98,7 +98,7 @@ package object spark {
     }
   }
 
-  implicit def toQdbTableRDDFunctions[A <: Row](
+  implicit def toQdbTableRDDFunctions[A <: WritableRow](
     rdd: RDD[A]): TableRDDFunctions[A] = {
     return new TableRDDFunctions[A](rdd)
   }
