@@ -1,4 +1,4 @@
-val qdbVersion = "3.13.4-SNAPSHOT"
+val qdbVersion = "3.13.4"
 
 name := "qdb-spark-connector"
 version := qdbVersion
